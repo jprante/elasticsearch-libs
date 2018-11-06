@@ -1,0 +1,102 @@
+
+sourceSets {
+    generated {
+        java {
+            srcDir "$buildDir/generated-src"
+        }
+        output.dir("$buildDir/generated-src", builtBy: 'sourceDownload')
+    }
+    main {
+        java {
+            srcDirs += sourceSets.generated.java.srcDirs
+        }
+    }
+}
+
+configurations {
+    source
+    binary
+}
+
+dependencies {
+    source "org.mockito:mockito-core:${project.property('mockito.version')}:sources"
+    source "org.objenesis:objenesis:${project.property('objenesis.version')}:sources"
+    source "net.bytebuddy:byte-buddy:${project.property('bytebuddy.version')}:sources"
+    compile "org.ow2.asm:asm:${project.property('asm.version')}"
+    compile "org.ow2.asm:asm-commons:${project.property('asm.version')}"
+    compile "org.ow2.asm:asm-tree:${project.property('asm.version')}"
+    // in upstream projects, we tolerate only hamcrest-all on the module graph, so drop hamcrest-core
+    compile("junit:junit:${project.property('junit.version')}") {
+        exclude module: 'hamcrest-core'
+    }
+    compile "org.hamcrest:hamcrest-all:${project.property('hamcrest.version')}"
+    compileOnly 'net.jcip:jcip-annotations:1.0'
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:3.1.3'
+}
+
+task unpackSource(type: Copy) {
+    configurations.source.each {
+        from zipTree(it)
+        into "${buildDir}/generated-src/java"
+        exclude '**/module-info*' // throw away asm module-info
+        exclude '**/META-INF/MANIFEST.MF' // throw away automatic module names
+        exclude '**/Mockito.java' // replace by our access-protected version
+        exclude '**/InlineByteBuddyMockMaker.java' // remove bytebuddy agent usage
+        exclude '**/*.class' // bytebuddy asm remapper class files in 'sources' - huh?
+        exclude '**/jar/asm/*' // remove internal bytebuddy asm mirror
+        exclude '**/jar/asm/signature/*' // remove internal bytebuddy asm mirror
+        exclude '**/UnsafeFactoryInstantiator.java' // sun.misc.Unsafe in objenesis
+        exclude '**/DefineClassHelper.java' // sun.misc.Unsafe in objenesis
+        exclude '**/UnsafeUtils.java' // sun.misc.Unsafe in objenesis
+        exclude '**/StdInstantiatorStrategy.java' // unsafe in objenesis, replace by our Java 11 version
+    }
+    doLast {
+        // we want our asm on the module graph, so we have to undo bytebuddy relocation
+        ant.replaceregexp(match: 'net.bytebuddy.jar.asm', replace: 'org.objectweb.asm', flags: 'g', byline: true) {
+            fileset(dir: "${buildDir}/generated-src/java")
+        }
+    }
+}
+
+task unpackResources(type: Copy) {
+    dependsOn unpackSource
+    configurations.binary.each {
+        from zipTree(it)
+        into "${buildDir}/resources/main"
+    }
+}
+
+afterEvaluate {
+    compileJava {
+        dependsOn unpackSource, unpackResources
+        inputs.property("moduleName", 'org.xbib.elasticsearch.securemock')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath
+            ]
+            classpath = files()
+        }
+    }
+    javadoc {
+        dependsOn unpackSource, unpackResources
+        inputs.property("moduleName", 'org.xbib.elasticsearch.securemock')
+        doFirst {
+            options.addStringOption('-module-path', classpath.asPath)
+            classpath = files()
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier 'javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}

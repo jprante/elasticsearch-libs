@@ -1,0 +1,63 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url 'http://xbib.org/repository'
+        }
+    }
+    dependencies {
+        classpath "org.xbib.gradle.plugin:gradle-plugin-shadow:1.1.1"
+    }
+}
+
+plugins {
+    id "org.sonarqube" version "2.6.1"
+    id "io.codearte.nexus-staging" version "0.11.0"
+}
+
+apply plugin: "java"
+apply plugin: "io.codearte.nexus-staging"
+
+task banner {
+    doFirst {
+        printf "Host: %s\nOS: %s %s %s\nJVM: %s %s %s %s\nGradle: %s Groovy: %s Java: %s\n" +
+                "Build: group: ${project.group} name: ${project.name} version: ${project.version}\n",
+                InetAddress.getLocalHost(),
+                System.getProperty("os.name"),
+                System.getProperty("os.arch"),
+                System.getProperty("os.version"),
+                System.getProperty("java.version"),
+                System.getProperty("java.vm.version"),
+                System.getProperty("java.vm.vendor"),
+                System.getProperty("java.vm.name"),
+                gradle.gradleVersion,
+                GroovySystem.getVersion(),
+                JavaVersion.current()
+        if (!JavaVersion.current().java11Compatible) {
+            println "WARNING: no Java 11 found. You will run into problems."
+        }
+    }
+}
+
+tasks.compileJava.dependsOn('banner')
+
+subprojects {
+
+    apply plugin: 'java'
+
+    compileJava {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    compileTestJava {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
+    apply from: rootProject.file('gradle/publish.gradle')
+    apply from: rootProject.file('gradle/sourcequality.gradle')
+}

@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+}
+
+apply plugin: 'org.xbib.gradle.plugin.shadow'
+
+dependencies {
+    testCompile "junit:junit:${project.property('junit.version')}"
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier 'javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+artifacts {
+    archives sourcesJar, javadocJar, shadowJar
+}
+
+shadowJar {
+    classifier = 'patch'
+    relocate('lite.beans', 'java.beans')
+    artifacts {
+        shadow(tasks.shadowJar.archivePath) {
+            builtBy shadowJar
+        }
+    }
+}

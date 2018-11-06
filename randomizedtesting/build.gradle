@@ -1,0 +1,41 @@
+
+dependencies {
+    compile("junit:junit:${project.property('junit.version')}") {
+        exclude module: 'hamcrest-core'
+    }
+    compile "org.hamcrest:hamcrest-all:${project.property('hamcrest.version')}"
+    testCompile "org.assertj:assertj-core:${project.property('assertj.version')}"
+}
+
+afterEvaluate {
+    compileJava {
+        inputs.property("moduleName", 'org.xbib.randomizedtesting')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath
+            ]
+            classpath = files()
+        }
+    }
+    javadoc {
+        inputs.property("moduleName", 'org.xbib.randomizedtesting')
+        doFirst {
+            options.addStringOption('-module-path', classpath.asPath)
+            classpath = files()
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier 'javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}

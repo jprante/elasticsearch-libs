@@ -1,0 +1,84 @@
+
+configurations {
+    source
+    binary
+}
+
+sourceSets {
+    generated {
+        java {
+            srcDir "$buildDir/generated-src"
+        }
+        output.dir("$buildDir/generated-src", builtBy: 'sourceDownload')
+    }
+    main {
+        java {
+            srcDirs += sourceSets.generated.java.srcDirs
+        }
+    }
+}
+
+dependencies {
+    source "com.google.guava:guava:${project.property('guava.version')}:sources"
+    binary "com.google.guava:guava:${project.property('guava.version')}"
+    source "com.google.guava:failureaccess:1.0:sources"
+    source "com.google.code.findbugs:jsr305:3.0.2:sources"
+    source "org.checkerframework:checker-qual:2.5.6:sources" // 2.5.2
+    source "com.google.errorprone:error_prone_annotations:2.2.0:sources"
+    source "com.google.j2objc:j2objc-annotations:1.1:sources"
+    source "org.codehaus.mojo:animal-sniffer-annotations:1.17:sources"
+}
+
+task unpackSource(type: Copy) {
+    configurations.source.each {
+        from zipTree(it)
+        into "${buildDir}/generated-src/java"
+        exclude '**/*.class' // huh?
+        exclude '**/Striped64.java'
+        exclude '**/LongAdder.java'
+        exclude '**/LongAddables.java'
+        exclude '**/UnsignedBytes.java'
+        exclude '**/LittleEndianByteArray.java'
+        exclude '**/AbstractFuture.java'
+    }
+}
+
+task unpackResources(type: Copy) {
+    dependsOn unpackSource
+    configurations.binary.each {
+        from zipTree(it)
+        into "${buildDir}/resources/main"
+    }
+}
+
+afterEvaluate {
+    compileJava {
+        dependsOn unpackSource, unpackResources
+        inputs.property("moduleName", 'org.xbib.elasticsearch.guava')
+        doFirst {
+            options.compilerArgs = ['--module-path', classpath.asPath]
+            classpath = files()
+        }
+    }
+    javadoc {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.guava')
+        doFirst {
+            options.addStringOption('-module-path', classpath.asPath)
+            classpath = files()
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier 'javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}

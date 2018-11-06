@@ -1,0 +1,45 @@
+# (C) Copyright Uwe Schindler (Generics Policeman) and others.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# These methods and classes should not be used by server classes (unsafe, no charset, no locale,...):
+
+@includeBundled jdk-unsafe-1.7
+
+@defaultMessage Uses default time zone
+java.time.LocalDateTime#now()
+java.time.LocalDate#now()
+java.time.LocalTime#now()
+java.time.OffsetDateTime#now()
+java.time.OffsetTime#now()
+java.time.Year#now()
+java.time.YearMonth#now()
+java.time.MonthDay#now()
+java.time.chrono.Chronology#dateNow()
+java.time.chrono.HijrahChronology#dateNow()
+java.time.chrono.JapaneseChronology#dateNow()
+java.time.chrono.MinguoChronology#dateNow()
+java.time.chrono.ThaiBuddhistChronology#dateNow()
+java.time.chrono.IsoChronology#dateNow()
+java.time.chrono.HijrahDate#now()
+java.time.chrono.JapaneseDate#now()
+java.time.chrono.MinguoDate#now()
+java.time.chrono.ThaiBuddhistDate#now()
+
+@defaultMessage Uses default locale
+java.time.format.DateTimeFormatterBuilder#toFormatter(java.time.format.ResolverStyle,java.time.chrono.Chronology)
+java.time.format.DateTimeFormatter#ofLocalizedDate(java.time.format.FormatStyle)
+java.time.format.DateTimeFormatter#ofLocalizedDateTime(java.time.format.FormatStyle,java.time.format.FormatStyle)
+java.time.format.DateTimeFormatter#ofLocalizedDateTime(java.time.format.FormatStyle)
+java.time.format.DateTimeFormatter#ofLocalizedTime(java.time.format.FormatStyle)
+java.time.format.DateTimeFormatter#ofPattern(java.lang.String)

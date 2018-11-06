@@ -1,0 +1,41 @@
+
+dependencies {
+    compile project(":randomizedtesting")
+    compile project(":guava")
+    compile "org.apache.ant:ant:${property('ant.version')}"
+    compile "org.ow2.asm:asm:${project.property('asm.version')}"
+    compile "org.simpleframework:simple-xml:${project.property('simpleframework.version')}"
+}
+
+afterEvaluate {
+    compileJava {
+        inputs.property("moduleName", 'org.xbib.randomizedtesting.junit.ant')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath
+            ]
+            classpath = files()
+        }
+    }
+    javadoc {
+        inputs.property("moduleName", 'org.xbib.randomizedtesting.junit.ant')
+        doFirst {
+            options.addStringOption('-module-path', classpath.asPath)
+            classpath = files()
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier 'javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}
