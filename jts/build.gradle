@@ -53,6 +53,7 @@ afterEvaluate {
     javadoc {
         inputs.property("moduleName", 'org.xbib.elasticsearch.jts')
         doFirst {
+            options.addStringOption('Xdoclint:none', '-quiet')
             options.addStringOption('-module-path', classpath.asPath)
             classpath = files()
         }

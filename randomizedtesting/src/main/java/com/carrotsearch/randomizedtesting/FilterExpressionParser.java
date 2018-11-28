@@ -14,7 +14,7 @@ public final class FilterExpressionParser {
   static final Node [] EMPTY = new Node [0];
 
   @SuppressWarnings("serial")
-  final class SyntaxException extends RuntimeException {
+  public final class SyntaxException extends RuntimeException {
     final Node node;
 
     SyntaxException(Node node, String msg) {
@@ -32,12 +32,12 @@ public final class FilterExpressionParser {
     }
   }
   
-  interface IContext {
+  public interface IContext {
     boolean defaultValue();
     boolean hasGroup(String value); 
   }
 
-  static class InputRange {
+  public static class InputRange {
     final String s;
     final int start;
     final int len;
@@ -90,13 +90,13 @@ public final class FilterExpressionParser {
     }
   }
 
-  class EosNode extends Node {
+  public class EosNode extends Node {
     public EosNode() {
       this.lbp = -1;
     }
   }
 
-  class DefaultNode extends Node {
+  public class DefaultNode extends Node {
     @Override
     Node nud() {
       return this;

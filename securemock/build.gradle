@@ -16,12 +16,14 @@ sourceSets {
 configurations {
     source
     binary
+    mains
 }
 
 dependencies {
-    source "org.mockito:mockito-core:${project.property('mockito.version')}:sources"
+    //source "org.mockito:mockito-core:${project.property('mockito.version')}:sources"
     source "org.objenesis:objenesis:${project.property('objenesis.version')}:sources"
     source "net.bytebuddy:byte-buddy:${project.property('bytebuddy.version')}:sources"
+    source "net.bytebuddy:byte-buddy-agent:${project.property('bytebuddy.version')}:sources"
     compile "org.ow2.asm:asm:${project.property('asm.version')}"
     compile "org.ow2.asm:asm-commons:${project.property('asm.version')}"
     compile "org.ow2.asm:asm-tree:${project.property('asm.version')}"
@@ -32,6 +34,8 @@ dependencies {
     compile "org.hamcrest:hamcrest-all:${project.property('hamcrest.version')}"
     compileOnly 'net.jcip:jcip-annotations:1.0'
     compileOnly 'com.github.spotbugs:spotbugs-annotations:3.1.3'
+
+    testCompile "org.assertj:assertj-core:${project.property('assertj.version')}"
 }
 
 task unpackSource(type: Copy) {
@@ -40,8 +44,6 @@ task unpackSource(type: Copy) {
         into "${buildDir}/generated-src/java"
         exclude '**/module-info*' // throw away asm module-info
         exclude '**/META-INF/MANIFEST.MF' // throw away automatic module names
-        exclude '**/Mockito.java' // replace by our access-protected version
-        exclude '**/InlineByteBuddyMockMaker.java' // remove bytebuddy agent usage
         exclude '**/*.class' // bytebuddy asm remapper class files in 'sources' - huh?
         exclude '**/jar/asm/*' // remove internal bytebuddy asm mirror
         exclude '**/jar/asm/signature/*' // remove internal bytebuddy asm mirror
@@ -49,6 +51,11 @@ task unpackSource(type: Copy) {
         exclude '**/DefineClassHelper.java' // sun.misc.Unsafe in objenesis
         exclude '**/UnsafeUtils.java' // sun.misc.Unsafe in objenesis
         exclude '**/StdInstantiatorStrategy.java' // unsafe in objenesis, replace by our Java 11 version
+        exclude '**/VirtualMachine.java' // bytebuddy agent (unix socket)
+        exclude '**/ByteBuddyAgent.java' // bytebuddy agent (unix socket)
+        //exclude '**/Mockito.java' // mockito: replace by our access-protected version
+        //exclude '**/InlineByteBuddyMockMaker.java' // mockito: remove bytebuddy agent usage
+        //exclude '**/StackTraceFilter.java' // mockito: race condition in Plugins instantiation, remove stacktrace filter plugin
     }
     doLast {
         // we want our asm on the module graph, so we have to undo bytebuddy relocation
@@ -77,10 +84,113 @@ afterEvaluate {
             classpath = files()
         }
     }
+    compileTestJava {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.securemock')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath,
+                    '--patch-module', 'org.xbib.elasticsearch.securemock=' + files(sourceSets.test.java.srcDirs).asPath,
+            ]
+            classpath = files()
+        }
+    }
+    test {
+        dependsOn 'jar'
+        doFirst {
+            classpath = files(configurations.testRuntime) + configurations.mains.artifacts.files
+            jvmArgs = [
+                    '--module-path', classpath.asPath,
+                    '--add-modules', 'ALL-MODULE-PATH',
+                    '--add-opens', 'java.base/java.lang=org.xbib.elasticsearch.securemock',
+                    '--add-opens', 'java.base/sun.reflect.generics.reflectiveObjects=org.assertj.core',
+                    '--patch-module', 'org.xbib.elasticsearch.securemock=' +
+                            files(sourceSets.test.java.outputDir, sourceSets.test.resources.srcDirs).asPath,
+                    '--add-reads', 'org.xbib.elasticsearch.securemock=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.concurrentmockito=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.configuration=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.configuration.injection=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.configuration.plugins=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.creation=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.creation.bytebuddy=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.creation.instance=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.debugging=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.exceptions.base=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.exceptions.stacktrace=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.framework=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.hamcrest=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.handler=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.internal=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.internal.exceptions=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.internal.exceptions.stacktrace=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.internal.exceptions.util=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.invocation=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.junit=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.junit.util=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.listeners=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.matchers=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.matchers.apachecommons=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.matchers.text=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitointegration=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.annotation=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.basicapi=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.bugs=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.bugs.creation=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.bugs.creation.api=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.bugs.creation.otherpackage=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.bugs.deepstubs=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.bugs.injection=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.bugs.varargs=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.configuration=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.constructor=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.customization=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.debugging=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.examples.use=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.internal.debugging=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.internal.junit=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.jls=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.junitrule=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.junitrunner=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.matchers=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.misuse=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.packageprotected=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.performance=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.plugins=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.puzzlers=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.serialization=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.session=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.spies=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.stacktrace=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.stubbing=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitousage.verification=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.mockitoutil=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.progress=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.reporting=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.runners=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.session=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.stubbing=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.stubbing.answers=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.stubbing.defaultanswers=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.util=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.util.collections=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.util.io=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.util.reflection=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.verification=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.verification.argumentmatching=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.verification.checkers=junit',
+            ]
+            scanForTestClasses = false
+            exclude '**/*$*'
+            exclude '**/Abstract*'
+            include '**/*Test.class'
+        }
+    }
     javadoc {
         dependsOn unpackSource, unpackResources
         inputs.property("moduleName", 'org.xbib.elasticsearch.securemock')
         doFirst {
+            options.addStringOption('Xdoclint:none', '-quiet')
             options.addStringOption('-module-path', classpath.asPath)
             classpath = files()
         }
@@ -98,5 +208,6 @@ task sourcesJar(type: Jar) {
 }
 
 artifacts {
+    mains jar
     archives sourcesJar, javadocJar
 }

@@ -1,0 +1,92 @@
+
+configurations {
+    source
+    binary
+}
+
+sourceSets {
+    generated {
+        java {
+            srcDir "$buildDir/generated-src"
+        }
+        output.dir("$buildDir/generated-src", builtBy: 'sourceDownload')
+    }
+    main {
+        java {
+            srcDirs += sourceSets.generated.java.srcDirs
+        }
+    }
+}
+
+dependencies {
+    source "org.apache.ant:ant:${property('ant.version')}:sources"
+    binary "org.apache.ant:ant:${property('ant.version')}:sources"
+    source "org.apache.ant:ant-launcher:${property('ant.version')}:sources"
+    source "org.apache.ant:ant-junit:${property('ant.version')}:sources"
+    compile("junit:junit:${project.property('junit.version')}") {
+        exclude module: 'hamcrest-core'
+    }
+}
+
+task unpackSource(type: Copy) {
+    configurations.source.each {
+        from zipTree(it)
+        into "${buildDir}/generated-src/java"
+        exclude '**/*.class'
+        exclude '**/*.properties'
+        exclude '**/*.xml'
+        exclude '**/*.txt'
+        // remove JDBC, RMI, Javascript
+        exclude '**/optional/depend/Depend.java'
+        exclude '**/JDBCTask.java'
+        exclude '**/Rmic.java'
+        exclude '**/rmic/*.java'
+        exclude '**/SQLExec.java'
+        exclude '**/JavaxScriptRunner.java'
+    }
+}
+
+task unpackResources(type: Copy) {
+    dependsOn unpackSource
+    configurations.binary.each {
+        from zipTree(it)
+        into "${buildDir}/resources/main"
+        exclude '**/*.class'
+        include '**/*.properties'
+        include '**/*.xml'
+        include '**/*.txt'
+    }
+}
+
+afterEvaluate {
+    compileJava {
+        dependsOn unpackSource, unpackResources
+        inputs.property("moduleName", 'org.xbib.elasticsearch.ant')
+        doFirst {
+            options.compilerArgs = ['--module-path', classpath.asPath]
+            classpath = files()
+        }
+    }
+    javadoc {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.ant')
+        doFirst {
+            options.addStringOption('Xdoclint:none', '-quiet')
+            options.addStringOption('-module-path', classpath.asPath)
+            classpath = files()
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier 'javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}

@@ -6,7 +6,7 @@ package com.carrotsearch.randomizedtesting;
  * @see RandomizedContext#closeAtEnd(java.io.Closeable, LifecycleScope)
  */
 @SuppressWarnings("serial")
-class ResourceDisposalError extends Error {
+public class ResourceDisposalError extends Error {
   public ResourceDisposalError(String msg, Throwable cause) {
     super(msg, cause);
   }

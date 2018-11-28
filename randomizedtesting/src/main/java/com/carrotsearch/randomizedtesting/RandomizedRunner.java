@@ -296,7 +296,7 @@ public final class RandomizedRunner extends Runner implements Filterable {
   /**
    * A marker for flagging zombie threads (leaked threads that couldn't be killed).
    */
-  static AtomicBoolean zombieMarker = new AtomicBoolean(false);
+  public static AtomicBoolean zombieMarker = new AtomicBoolean(false);
 
   /**
    * The "main" thread group we will be tracking (including subgroups).

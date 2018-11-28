@@ -3,23 +3,80 @@ module org.xbib.elasticsearch.securemock {
     exports org.mockito;
     exports org.mockito.codegen;
     exports org.mockito.configuration;
-    exports org.mockito.creation.instance;
+    exports org.mockito.exceptions.base;
+    exports org.mockito.exceptions.misusing;
+    exports org.mockito.exceptions.stacktrace;
+    exports org.mockito.exceptions.verification;
+    exports org.mockito.exceptions.verification.junit;
     exports org.mockito.hamcrest;
+    exports org.mockito.internal;
+    exports org.mockito.internal.configuration;
+    exports org.mockito.internal.configuration.injection;
+    exports org.mockito.internal.configuration.plugins;
+    exports org.mockito.internal.creation;
+    exports org.mockito.internal.creation.bytebuddy;
+    exports org.mockito.internal.creation.instance;
+    exports org.mockito.internal.creation.settings;
+    exports org.mockito.internal.creation.util;
+    exports org.mockito.internal.debugging;
+    exports org.mockito.internal.exceptions;
+    exports org.mockito.internal.exceptions.stacktrace;
+    exports org.mockito.internal.exceptions.util;
+    exports org.mockito.internal.framework;
+    exports org.mockito.internal.hamcrest;
+    exports org.mockito.internal.invocation.finder;
+    exports org.mockito.internal.junit;
+    exports org.mockito.internal.junit.util;
+    exports org.mockito.internal.handler;
+    exports org.mockito.internal.invocation;
+    exports org.mockito.internal.listeners;
+    exports org.mockito.internal.matchers;
+    exports org.mockito.internal.matchers.apachecommons;
+    exports org.mockito.internal.matchers.text;
+    exports org.mockito.internal.progress;
+    exports org.mockito.internal.reporting;
+    exports org.mockito.internal.runners;
+    exports org.mockito.internal.runners.util;
+    exports org.mockito.internal.session;
+    exports org.mockito.internal.stubbing;
+    exports org.mockito.internal.stubbing.answers;
+    exports org.mockito.internal.stubbing.defaultanswers;
+    exports org.mockito.internal.util;
+    exports org.mockito.internal.util.collections;
+    exports org.mockito.internal.util.concurrent;
+    exports org.mockito.internal.util.io;
+    exports org.mockito.internal.util.reflection;
+    exports org.mockito.internal.verification;
+    exports org.mockito.internal.verification.api;
+    exports org.mockito.internal.verification.argumentmatching;
+    exports org.mockito.internal.verification.checkers;
     exports org.mockito.invocation;
     exports org.mockito.junit;
     exports org.mockito.listeners;
     exports org.mockito.mock;
     exports org.mockito.plugins;
+    exports org.mockito.runners;
     exports org.mockito.quality;
     exports org.mockito.session;
     exports org.mockito.stubbing;
     exports org.mockito.verification;
+    exports org.objenesis;
+    exports org.objenesis.instantiator;
+    exports net.bytebuddy;
+    exports net.bytebuddy.agent;
+    exports net.bytebuddy.description.modifier;
+    exports net.bytebuddy.description.type;
+    exports net.bytebuddy.dynamic;
+    exports net.bytebuddy.dynamic.loading;
+    exports net.bytebuddy.dynamic.scaffold;
+    exports net.bytebuddy.implementation;
+    exports net.bytebuddy.matcher;
 
+    requires java.instrument; //java.lang.instrument.Instrumentation in InlineByteBuddyMockMaker
+    requires java.management; // java.lang.management in ByteBuddyAgent
+    requires jdk.unsupported; // sun.reflect.ReflectionFactory in org.xbib.securemock.objenesis.instantiator.sun.SunReflectionFactoryHelper.getReflectionFactoryClass
     requires org.objectweb.asm;
     requires org.objectweb.asm.commons;
     requires org.objectweb.asm.tree;
     requires junit;
-    requires java.instrument; //java.lang.instrument.Instrumentation in InlineByteBuddyMockMaker
-    requires java.management; // java.lang.management in ByteBuddyAgent
-    requires jdk.unsupported; // sun.reflect.ReflectionFactory in org.xbib.securemock.objenesis.instantiator.sun.SunReflectionFactoryHelper.getReflectionFactoryClass
 }

@@ -30,6 +30,7 @@ module org.xbib.elasticsearch.lucene {
     exports org.apache.lucene.analysis.ckb;
     exports org.apache.lucene.analysis.commongrams;
     exports org.apache.lucene.analysis.compound;
+    exports org.apache.lucene.analysis.compound.hyphenation;
     exports org.apache.lucene.analysis.core;
     exports org.apache.lucene.analysis.custom;
     exports org.apache.lucene.analysis.cz;
@@ -82,10 +83,14 @@ module org.xbib.elasticsearch.lucene {
     exports org.apache.lucene.codecs.blocktree;
     exports org.apache.lucene.codecs.compressing;
     exports org.apache.lucene.codecs.lucene50;
+    exports org.apache.lucene.codecs.lucene53;
+    exports org.apache.lucene.codecs.lucene54;
     exports org.apache.lucene.codecs.lucene60;
+    exports org.apache.lucene.codecs.lucene62;
     exports org.apache.lucene.codecs.lucene70;
     exports org.apache.lucene.codecs.perfield;
     exports org.apache.lucene.collation;
+    exports org.apache.lucene.collation.tokenattributes;
     exports org.apache.lucene.document;
     exports org.apache.lucene.geo;
     exports org.apache.lucene.index;
@@ -93,10 +98,15 @@ module org.xbib.elasticsearch.lucene {
     exports org.apache.lucene.misc;
     exports org.apache.lucene.payloads;
     exports org.apache.lucene.queries;
+    exports org.apache.lucene.queries.function;
+    exports org.apache.lucene.queries.mlt;
+    exports org.apache.lucene.queries.payloads;
     exports org.apache.lucene.queryparser.classic;
     exports org.apache.lucene.queryparser.complexPhrase;
     exports org.apache.lucene.queryparser.ext;
     exports org.apache.lucene.queryparser.simple;
+    exports org.apache.lucene.queryparser.surround.parser;
+    exports org.apache.lucene.queryparser.surround.query;
     exports org.apache.lucene.queryparser.xml;
     exports org.apache.lucene.sandbox.queries;
     exports org.apache.lucene.search;
@@ -109,8 +119,12 @@ module org.xbib.elasticsearch.lucene {
     exports org.apache.lucene.search.suggest;
     exports org.apache.lucene.search.suggest.analyzing;
     exports org.apache.lucene.search.suggest.document;
+    exports org.apache.lucene.search.suggest.fst;
+    exports org.apache.lucene.search.suggest.jaspell;
+    exports org.apache.lucene.search.suggest.tst;
     exports org.apache.lucene.search.uhighlight;
     exports org.apache.lucene.search.vectorhighlight;
+    exports org.apache.lucene.spatial;
     exports org.apache.lucene.spatial.bbox;
     exports org.apache.lucene.spatial.composite;
     exports org.apache.lucene.spatial.prefix;
@@ -133,6 +147,36 @@ module org.xbib.elasticsearch.lucene {
     exports org.tartarus.snowball;
     exports org.tartarus.snowball.ext;
 
+    opens org.apache.lucene.analysis;
+    opens org.apache.lucene.analysis.ar;
+    opens org.apache.lucene.analysis.bg;
+    opens org.apache.lucene.analysis.bn;
+    opens org.apache.lucene.analysis.br;
+    opens org.apache.lucene.analysis.ca;
+    opens org.apache.lucene.analysis.cjk;
+    opens org.apache.lucene.analysis.ckb;
+    opens org.apache.lucene.analysis.compound;
+    opens org.apache.lucene.analysis.cz;
+    opens org.apache.lucene.analysis.el;
+    opens org.apache.lucene.analysis.eu;
+    opens org.apache.lucene.analysis.fa;
+    opens org.apache.lucene.analysis.ga;
+    opens org.apache.lucene.analysis.gl;
+    opens org.apache.lucene.analysis.hi;
+    opens org.apache.lucene.analysis.hy;
+    opens org.apache.lucene.analysis.id;
+    opens org.apache.lucene.analysis.lt;
+    opens org.apache.lucene.analysis.lv;
+    opens org.apache.lucene.analysis.pt;
+    opens org.apache.lucene.analysis.ro;
+    opens org.apache.lucene.analysis.snowball;
+    opens org.apache.lucene.analysis.th;
+    opens org.apache.lucene.analysis.tr;
+
+    uses org.apache.lucene.codecs.Codec;
+    uses org.apache.lucene.codecs.DocValuesFormat;
+    uses org.apache.lucene.codecs.PostingsFormat;
+
     provides org.apache.lucene.codecs.Codec with
             org.apache.lucene.codecs.lucene70.Lucene70Codec;
 
@@ -145,9 +189,7 @@ module org.xbib.elasticsearch.lucene {
             org.apache.lucene.codecs.idversion.IDVersionPostingsFormat;
 
     requires java.logging;
-
-    requires transitive java.xml; // for XML query parser, compound hyphenation parser
-
     requires org.xbib.elasticsearch.spatial4j;
     requires org.xbib.elasticsearch.s2geo;
+    requires transitive java.xml; //  XML query parser, compound hyphenation parser
 }

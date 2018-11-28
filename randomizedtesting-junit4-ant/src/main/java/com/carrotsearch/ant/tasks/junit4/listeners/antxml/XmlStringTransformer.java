@@ -2,7 +2,7 @@ package com.carrotsearch.ant.tasks.junit4.listeners.antxml;
 
 import org.simpleframework.xml.transform.Transform;
 
-final class XmlStringTransformer implements Transform<String> {
+public final class XmlStringTransformer implements Transform<String> {
   private final StringBuilder buffer = new StringBuilder();
 
   @Override

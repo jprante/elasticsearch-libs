@@ -1,3 +1,7 @@
+configurations {
+    mains
+    tests
+}
 
 dependencies {
     compile("junit:junit:${project.property('junit.version')}") {
@@ -9,7 +13,7 @@ dependencies {
 
 afterEvaluate {
     compileJava {
-        inputs.property("moduleName", 'org.xbib.randomizedtesting')
+        inputs.property("moduleName", 'org.xbib.elasticsearch.randomizedtesting')
         doFirst {
             options.compilerArgs = [
                     '--module-path', classpath.asPath
@@ -17,8 +21,31 @@ afterEvaluate {
             classpath = files()
         }
     }
+    compileTestJava {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.randomizedtesting.test')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath
+            ]
+            classpath = files()
+        }
+    }
+    test {
+        dependsOn 'jar', 'testJar'
+        doFirst {
+            classpath = files(configurations.testRuntime) + configurations.mains.artifacts.files + configurations.tests.artifacts.files
+            jvmArgs = [
+                    '--module-path', classpath.asPath,
+                    '--add-modules', 'org.xbib.elasticsearch.randomizedtesting',
+                    '--add-modules', 'org.xbib.elasticsearch.randomizedtesting.test'
+            ]
+            scanForTestClasses = false
+            exclude '**/Test*$*'
+            include '**/Test*.class'
+        }
+    }
     javadoc {
-        inputs.property("moduleName", 'org.xbib.randomizedtesting')
+        inputs.property("moduleName", 'org.xbib.elasticearch.randomizedtesting')
         doFirst {
             options.addStringOption('-module-path', classpath.asPath)
             classpath = files()
@@ -36,6 +63,14 @@ task sourcesJar(type: Jar) {
     classifier 'sources'
 }
 
+task testJar(type: Jar) {
+    group = 'build'
+    from sourceSets.test.output
+    classifier 'tests'
+}
+
 artifacts {
-    archives sourcesJar, javadocJar
+    mains jar
+    tests testJar
+    archives sourcesJar, javadocJar, testJar
 }

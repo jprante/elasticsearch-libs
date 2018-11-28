@@ -19,6 +19,8 @@
 
 package org.elasticsearch.secure_sm;
 
+import java.io.FileDescriptor;
+import java.net.InetAddress;
 import java.security.AccessController;
 import java.security.Permission;
 import java.security.PrivilegedAction;
@@ -54,7 +56,7 @@ import java.util.Objects;
  * </ul>
  * <p>
  * If java security debugging ({@code java.security.debug}) is enabled, and this SecurityManager
- * is installed, it will emit additional debugging information when threadgroup access checks fail.
+ * is installed, it will emit additional debugging information.
  *  
  * @see SecurityManager#checkAccess(Thread)
  * @see SecurityManager#checkAccess(ThreadGroup)
@@ -110,29 +112,205 @@ public class SecureSM extends SecurityManager {
     };
 
     // java.security.debug support
-    private static final boolean DEBUG = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-        @Override
-        public Boolean run() {
-            try {
-                String v = System.getProperty("java.security.debug");
-                // simple check that they are trying to debug
-                return v != null && v.length() > 0;
-            } catch (SecurityException e) {
-                return false;
-            }
+    private static final boolean DEBUG_ALL = AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> {
+        try {
+            String v = System.getProperty("java.security.debug");
+            return v != null && v.contains("all");
+        } catch (SecurityException e) {
+            return false;
         }
     });
-    
+
+    private static final boolean DEBUG_PERMISSIONS = AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> {
+        try {
+            String v = System.getProperty("java.security.debug");
+            return v != null && v.contains("permissions");
+        } catch (SecurityException e) {
+            return false;
+        }
+    });
+
+    private static final boolean DEBUG_ACCESS = AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> {
+        try {
+            String v = System.getProperty("java.security.debug");
+            return v != null && v.contains("access");
+        } catch (SecurityException e) {
+            return false;
+        }
+    });
+
+    @Override
+    public void checkPermission(Permission permission) {
+        if (DEBUG_PERMISSIONS) {
+            System.err.println("checkPermission " + permission);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkPermission(permission);
+    }
+
+    @Override
+    public void checkPermission(Permission perm, Object context) {
+        if (DEBUG_PERMISSIONS) {
+            System.err.println("checkPermission " + perm + " context = " + context);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkPermission(perm, context);
+    }
+
+    @Override
+    public void checkAccept (String host, int port) {
+        if (DEBUG_ALL) {
+            System.err.println("checkAccept " + host + " port = " + port);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkAccept(host, port);
+    }
+
+    @Override
+    public void checkConnect(String host, int port) {
+        if (DEBUG_ALL) {
+            System.err.println("checkConnect " + host + " port = " + port);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkConnect(host, port);
+    }
+
+    @Override
+    public void checkConnect(String host, int port, Object context) {
+        if (DEBUG_ALL) {
+            System.err.println("checkConnect " + host + " port = " + port + " context = " + context);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkConnect(host, port, context);
+    }
+
+
+    @Override
+    public void checkCreateClassLoader () {
+        if (DEBUG_ALL) {
+            System.err.println("checkCreateClassLoader");
+            Thread.currentThread().dumpStack();
+        }
+        super.checkCreateClassLoader();
+    }
+
+    @Override
+    public void checkExec(String cmd) {
+        if (DEBUG_ALL) {
+            System.err.println("checkExec " + cmd);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkExec(cmd);
+    }
+
+    @Override
+    public void checkLink(String lib) {
+        if (DEBUG_ALL) {
+            System.err.println("checkLink " + lib);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkLink(lib);
+    }
+
+    @Override
+    public void checkListen(int port) {
+        if (DEBUG_ALL) {
+            System.err.println("checkListen port = " + port);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkListen(port);
+    }
+
+    public void checkMulticast(InetAddress maddr) {
+        if (DEBUG_ALL) {
+            System.err.println("checkMulticast " + maddr);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkMulticast(maddr);
+    }
+
+    public void checkPropertyAccess(String key) {
+        if (DEBUG_ALL) {
+            System.err.println("checkPropertyAccess " + key);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkPropertyAccess(key);
+    }
+
+    @Override
+    public void checkPropertiesAccess() {
+        if (DEBUG_ALL) {
+            System.err.println("checkPropertiesAccess");
+            Thread.currentThread().dumpStack();
+        }
+        super.checkPropertiesAccess();
+    }
+
+    @Override
+    public void checkRead(String file) {
+        if (DEBUG_ALL) {
+            System.err.println("checkRead " + file);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkRead(file);
+    }
+
+    @Override
+    public void checkRead(String file, Object context) {
+        if (DEBUG_ALL) {
+            System.err.println("checkRead " + file + " context = " + context);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkRead(file, context);
+    }
+
+    @Override
+    public void checkRead(FileDescriptor fd) {
+        if (DEBUG_ALL) {
+            System.err.println("checkRead " + fd);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkRead(fd);
+    }
+
+    @Override
+    public void checkWrite (String file) {
+        if (DEBUG_ALL) {
+            System.err.println("checkWrite " + file);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkWrite(file);
+    }
+
+    @Override
+    public void checkWrite(FileDescriptor fd) {
+        if (DEBUG_ALL) {
+            System.err.println("checkWrite " + fd);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkWrite(fd);
+    }
+
+    @Override
+    public void checkDelete(String file) {
+        if (DEBUG_ALL) {
+            System.err.println("checkDelete " + file);
+            Thread.currentThread().dumpStack();
+        }
+        super.checkDelete(file);
+    }
+
     @Override
     @SuppressForbidden(reason = "java.security.debug messages go to standard error")
     public void checkAccess(Thread t) {
         try {
             checkThreadAccess(t);
         } catch (SecurityException e) {
-            if (DEBUG) {
-                System.err.println("access: caller thread=" + Thread.currentThread());
-                System.err.println("access: target thread=" + t);
-                debugThreadGroups(Thread.currentThread().getThreadGroup(), t.getThreadGroup());
+            if (DEBUG_ACCESS) {
+                System.err.println("checkAccess: caller thread = " + Thread.currentThread() +
+                                " caller group = " + Thread.currentThread().getThreadGroup() +
+                        " target thread = " + t +
+                        " target thread group = " + t.getThreadGroup());
             }
             throw e;
         }
@@ -144,38 +322,25 @@ public class SecureSM extends SecurityManager {
         try {
             checkThreadGroupAccess(g);
         } catch (SecurityException e) {
-            if (DEBUG) {
-                System.err.println("access: caller thread=" + Thread.currentThread());
-                debugThreadGroups(Thread.currentThread().getThreadGroup(), g);
+            if (DEBUG_ACCESS) {
+                System.err.println("checkAccess (threadgroup): caller thread = " + Thread.currentThread() +
+                        " caller group = " + Thread.currentThread().getThreadGroup() +
+                        " target thread group = " + g);
             }
             throw e;
         }
     }
-
-    @SuppressForbidden(reason = "java.security.debug messages go to standard error")
-    private void debugThreadGroups(final ThreadGroup caller, final ThreadGroup target) {
-        System.err.println("access: caller group=" + caller);
-        System.err.println("access: target group=" + target);
-    }
     
-    // thread permission logic
 
     private static final Permission MODIFY_THREAD_PERMISSION = new RuntimePermission("modifyThread");
     private static final Permission MODIFY_ARBITRARY_THREAD_PERMISSION = new ThreadPermission("modifyArbitraryThread");
 
     protected void checkThreadAccess(Thread t) {
         Objects.requireNonNull(t);
-
-        // first, check if we can modify threads at all.
         checkPermission(MODIFY_THREAD_PERMISSION);
-        
-        // check the threadgroup, if its our thread group or an ancestor, its fine.
         final ThreadGroup source = Thread.currentThread().getThreadGroup();
         final ThreadGroup target = t.getThreadGroup();
-        
-        if (target == null) {
-            return;    // its a dead thread, do nothing.
-        } else if (source.parentOf(target) == false) {
+        if (target != null && !source.parentOf(target)) {
             checkPermission(MODIFY_ARBITRARY_THREAD_PERMISSION);
         }
     }
@@ -185,17 +350,9 @@ public class SecureSM extends SecurityManager {
     
     protected void checkThreadGroupAccess(ThreadGroup g) {
         Objects.requireNonNull(g);
-
-        // first, check if we can modify thread groups at all.
         checkPermission(MODIFY_THREADGROUP_PERMISSION);
-        
-        // check the threadgroup, if its our thread group or an ancestor, its fine.
         final ThreadGroup source = Thread.currentThread().getThreadGroup();
-        final ThreadGroup target = g;
-        
-        if (source == null) {
-            return; // we are a dead thread, do nothing
-        } else if (source.parentOf(target) == false) {
+        if (source != null && !source.parentOf(g)) {
             checkPermission(MODIFY_ARBITRARY_THREADGROUP_PERMISSION);
         }
     }

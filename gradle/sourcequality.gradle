@@ -1,4 +1,5 @@
 
+/*
 sonarqube {
     properties {
         property "sonar.projectName", "${project.group} ${project.name}"
@@ -9,3 +10,4 @@ sonarqube {
         property "sonar.junit.reportsPath", "build/test-results/test/"
     }
 }
+*/

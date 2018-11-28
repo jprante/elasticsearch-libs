@@ -28,7 +28,7 @@ import com.google.common.eventbus.EventBus;
  */
 public class LocalSlaveStreamHandler implements ExecuteStreamHandler {
   private final EventBus eventBus;
-  private final ClassLoader refLoader;
+  //private final ClassLoader refLoader;
 
   private InputStream stdout;
   private InputStream stderr;
@@ -53,11 +53,11 @@ public class LocalSlaveStreamHandler implements ExecuteStreamHandler {
   private final OutputStream streamsBufferWrapper;
 
   public LocalSlaveStreamHandler(
-      EventBus eventBus, ClassLoader classLoader, PrintStream warnStream, TailInputStream eventStream,
+      EventBus eventBus, /*ClassLoader classLoader,*/ PrintStream warnStream, TailInputStream eventStream,
       OutputStream sysout, OutputStream syserr, long heartbeat, final RandomAccessFile streamsBuffer) {
     this.eventBus = eventBus;
     this.warnStream = warnStream;
-    this.refLoader = classLoader;
+    //this.refLoader = classLoader;
     this.eventStream = eventStream;
     this.sysout = sysout;
     this.syserr = syserr;
@@ -214,7 +214,7 @@ public class LocalSlaveStreamHandler implements ExecuteStreamHandler {
    */
   void pumpEvents(InputStream eventStream) {
     try {
-      Deserializer deserializer = new Deserializer(eventStream, refLoader);
+      Deserializer deserializer = new Deserializer(eventStream/*, refLoader*/);
 
       IEvent event = null;
       while ((event = deserializer.deserialize()) != null) {

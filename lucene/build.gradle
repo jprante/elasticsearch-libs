@@ -1,6 +1,9 @@
 
 configurations {
     source
+    binary
+    mains
+    tests
 }
 
 sourceSets {
@@ -35,60 +38,119 @@ dependencies {
     source "org.apache.lucene:lucene-spatial3d:${property('lucene.version')}:sources"
     source "org.apache.lucene:lucene-suggest:${property('lucene.version')}:sources"
 
+    binary "org.apache.lucene:lucene-analyzers-common:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-backward-codecs:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-core:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-grouping:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-highlighter:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-join:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-memory:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-misc:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-queries:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-queryparser:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-sandbox:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-spatial:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-spatial-extras:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-spatial3d:${property('lucene.version')}"
+    binary "org.apache.lucene:lucene-suggest:${property('lucene.version')}"
+
     compile project(':spatial4j')
     compile project(':s2geo')
 
+    testCompile project(':lucene-test-framework')
 }
 
 task unpackSource(type: Copy) {
     configurations.source.each {
-        if (it.toString().endsWith('sources.jar')) {
-            from zipTree(it)
-            into "$buildDir/generated-src/java"
-            // our versions have public modifiers for modularized  lucene-test-framework
-            exclude '**/Automaton.java'
-            exclude '**/BaseDirectory.java'
-            exclude '**/FieldQuery.java'
-            exclude '**/ConcurrentMergeScheduler.java'
-            exclude '**/Directory.java'
-            exclude '**/DocumentsWriter.java'
-            exclude '**/DocumentsWriterPerThreadPool.java'
-            exclude '**/FieldInfo.java'
-            exclude '**/FieldInfos.java'
-            exclude '**/FilterLeafReader.java'
-            exclude '**/IndexFileDeleter.java'
-            exclude '**/IndexReader.java'
-            exclude '**/IndexWriter.java'
-            exclude '**/MergeReaderWrapper.java'
-            exclude '**/Operations.java'
-            exclude '**/SegmentReader.java'
-            exclude '**/SegmentCoreReaders.java'
-            exclude '**/RAMDirectory.java'
-            exclude '**/RAMFile.java'
-            exclude '**/RamUsageEstimator.java'
-            exclude '**/search/Scorer.java'
-        }
+        from zipTree(it)
+        into "$buildDir/generated-src/java"
+        // our versions have public modifiers for modularized  lucene-test-framework
+        exclude '**/*.class'
+        exclude '**/Automaton.java'
+        exclude '**/BaseDirectory.java'
+        exclude '**/FieldQuery.java'
+        exclude '**/ConcurrentMergeScheduler.java'
+        exclude '**/Directory.java'
+        exclude '**/DocumentsWriter.java'
+        exclude '**/DocumentsWriterPerThreadPool.java'
+        exclude '**/FieldInfo.java'
+        exclude '**/FieldInfos.java'
+        exclude '**/FilterLeafReader.java'
+        exclude '**/IndexFileDeleter.java'
+        exclude '**/IndexReader.java'
+        exclude '**/IndexWriter.java'
+        exclude '**/MergeReaderWrapper.java'
+        exclude '**/Operations.java'
+        exclude '**/SegmentReader.java'
+        exclude '**/SegmentCoreReaders.java'
+        exclude '**/RAMDirectory.java'
+        exclude '**/RAMFile.java'
+        exclude '**/RamUsageEstimator.java'
+        exclude '**/search/Scorer.java'
+        exclude '**/codecs/compressing/CompressingTermVectorsReader.java'
+        exclude '**/codecs/compressing/CompressingStoredFieldsReader.java'
+        exclude '**/codecs/compressing/CompressingStoredFieldsWriter.java'
+        exclude '**/NamedSPILoader.java'
+        exclude '**/SPIClassIterator.java'
+        exclude '**/StopwordAnalyzerBase.java'
+        exclude '**/util/IOUtils.java'
+        exclude '**/AnalysisSPILoader.java'
+        exclude '**/hunspell/Stemmer.java'
+        exclude '**/hunspell/Dictionary.java'
+        exclude '**/analysis/ReusableStringReader.java'
+        exclude '**/analysis/WordlistLoader.java'
+        exclude '**/analysis/br/BrazilianAnalyzer.java'
+        exclude '**/analysis/cz/CzechAnalyzer.java'
+        exclude '**/analysis/ckb/SoraniAnalyzer.java'
+        exclude '**/analysis/da/DanishAnalyzer.java'
+        exclude '**/analysis/de/GermanAnalyzer.java'
+        exclude '**/analysis/es/SpanishAnalyzer.java'
+        exclude '**/analysis/nl/DutchAnalyzer.java'
+        exclude '**/analysis/fi/FinnishAnalyzer.java'
+        exclude '**/analysis/fr/FrenchAnalyzer.java'
+        exclude '**/analysis/gl/GalicianAnalyzer.java'
+        exclude '**/analysis/hu/HungarianAnalyzer.java'
+        exclude '**/analysis/it/ItalianAnalyzer.java'
+        exclude '**/analysis/lv/LatvianAnalyzer.java'
+        exclude '**/analysis/no/NorwegianAnalyzer.java'
+        exclude '**/analysis/pt/PortugueseAnalyzer.java'
+        exclude '**/analysis/ru/RussianAnalyzer.java'
+        exclude '**/analysis/sv/SwedishAnalyzer.java'
     }
 }
 
 task unpackResources(type: Copy) {
-    dependsOn unpackSource
-    from "$buildDir/generated-src/java"
-    into "$buildDir/resources/main"
-    include '**/*.txt'
-    // for loading XML for controlling Lucene compound hyphenation
-    include '**/hyphenation.dtd'
-    // snowball stemming
-    include '**/stem_ISO_8859_1.sbl'
-    // for portuguese stemming
-    include '**/portuguese.rslp'
-    // omit jj, jflex
+    configurations.binary.each {
+        from zipTree(it)
+        into "$buildDir/resources/main"
+        exclude '**/*.java'
+        exclude '**/*.class'
+        exclude '**/META-INF/*'
+        // stopwords
+        include '**/*.txt'
+        // for loading XML for controlling Lucene compound hyphenation
+        include '**/hyphenation.dtd'
+        // snowball stemming
+        include '**/stem_ISO_8859_1.sbl'
+        // for portuguese stemming
+        include '**/portuguese.rslp'
+        include '**/galician.rslp'
+    }
 }
 
 afterEvaluate {
     compileJava {
         dependsOn unpackSource, unpackResources
         inputs.property("moduleName", 'org.xbib.elasticsearch.lucene')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath
+            ]
+            classpath = files()
+        }
+    }
+    compileTestJava {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.lucene.test')
         doFirst {
             options.compilerArgs = [
                     '--module-path', classpath.asPath
@@ -103,6 +165,21 @@ afterEvaluate {
             classpath = files()
         }
     }
+    test {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.lucene.test')
+        dependsOn 'jar', 'testJar'
+        doFirst {
+            classpath = files(configurations.testRuntime) + configurations.mains.artifacts.files + configurations.tests.artifacts.files
+            jvmArgs = [
+                    '--module-path', classpath.asPath,
+                    '--add-modules', 'ALL-MODULE-PATH'
+            ]
+            testLogging.showStandardStreams = true
+            scanForTestClasses = false
+            include "**/Test*.class"
+            exclude '**/Test*$*.class'
+        }
+    }
 }
 
 task javadocJar(type: Jar) {
@@ -110,11 +187,23 @@ task javadocJar(type: Jar) {
     classifier 'javadoc'
 }
 
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
 task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
     classifier 'sources'
 }
 
+task testJar(type: Jar) {
+    group = 'build'
+    from sourceSets.test.output
+    classifier 'tests'
+}
+
 artifacts {
-    archives sourcesJar, javadocJar
+    mains jar
+    tests testJar
+    archives sourcesJar, javadocJar, testJar
 }

@@ -3,8 +3,8 @@ package org.mockito;
 import org.mockito.internal.MockitoCore;
 import org.mockito.internal.creation.MockSettingsImpl;
 import org.mockito.internal.framework.DefaultMockitoFramework;
-import org.mockito.internal.session.DefaultMockitoSessionBuilder;
 import org.mockito.internal.verification.VerificationModeFactory;
+import org.mockito.internal.session.DefaultMockitoSessionBuilder;
 import org.mockito.session.MockitoSessionBuilder;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
@@ -17,6 +17,8 @@ import org.mockito.verification.VerificationWithTimeout;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+
+import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
 
 /**
  * Wraps Mockito API with calls to AccessController.
@@ -39,7 +41,7 @@ import java.security.PrivilegedAction;
 @SuppressWarnings("unchecked")
 public class Mockito extends ArgumentMatchers {
 
-    static final MockitoCore MOCKITO_CORE = new MockitoCore();
+    private static final MockitoCore MOCKITO_CORE = new MockitoCore();
 
     public static final Answer<Object> RETURNS_DEFAULTS = Answers.RETURNS_DEFAULTS;
     public static final Answer<Object> RETURNS_SMART_NULLS = Answers.RETURNS_SMART_NULLS;
@@ -48,9 +50,10 @@ public class Mockito extends ArgumentMatchers {
     public static final Answer<Object> CALLS_REAL_METHODS = Answers.CALLS_REAL_METHODS;
     public static final Answer<Object> RETURNS_SELF = Answers.RETURNS_SELF;
 
-    public static <T> T mock(Class<T> classToMock) {
+    public static <T> T mock(final Class<T> classToMock) {
+        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         T mockedClass = AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                mock(classToMock, withSettings()));
+                mock(classToMock, withSettings(callerClass)));
         if (mockedClass == null) {
             throw new IllegalStateException("unable to mock " + classToMock);
         }
@@ -58,8 +61,9 @@ public class Mockito extends ArgumentMatchers {
     }
 
     public static <T> T mock(final Class<T> classToMock, final String name) {
+        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                mock(classToMock, withSettings()
+                mock(classToMock, withSettings(callerClass)
                         .name(name)
                         .defaultAnswer(RETURNS_DEFAULTS)));
     }
@@ -70,8 +74,9 @@ public class Mockito extends ArgumentMatchers {
     }
 
     public static <T> T mock(final Class<T> classToMock, final Answer defaultAnswer) {
+        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                mock(classToMock, withSettings().defaultAnswer(defaultAnswer)));
+                mock(classToMock, withSettings(callerClass).defaultAnswer(defaultAnswer)));
     }
     
     public static <T> T mock(final Class<T> classToMock, final MockSettings mockSettings) {
@@ -80,15 +85,17 @@ public class Mockito extends ArgumentMatchers {
     }
     
     public static <T> T spy(final T object) {
+        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                MOCKITO_CORE.mock((Class<T>) object.getClass(), withSettings()
+                MOCKITO_CORE.mock((Class<T>) object.getClass(), withSettings(callerClass)
                         .spiedInstance(object)
                         .defaultAnswer(CALLS_REAL_METHODS)));
     }
 
     public static <T> T spy(Class<T> classToSpy) {
+        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                MOCKITO_CORE.mock(classToSpy, withSettings()
+                MOCKITO_CORE.mock(classToSpy, withSettings(callerClass)
                 .useConstructor()
                 .defaultAnswer(CALLS_REAL_METHODS)));
     }
@@ -129,9 +136,9 @@ public class Mockito extends ArgumentMatchers {
         });
     }
     
-    public static void verifyZeroInteractions(final Object... mocks) {
+    public static void verifyNoInteractions(final Object... mocks) {
         AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            MOCKITO_CORE.verifyNoMoreInteractions(mocks);
+            MOCKITO_CORE.verifyNoInteractions(mocks);
             return null;
         });
     }
@@ -197,7 +204,7 @@ public class Mockito extends ArgumentMatchers {
     }
     
     public static VerificationMode atLeastOnce() {
-        return AccessController.doPrivileged((PrivilegedAction<VerificationMode>)
+        return AccessController.doPrivileged((PrivilegedAction<VerificationMode>) () ->
                 VerificationModeFactory.atLeastOnce());
     }
     
@@ -237,10 +244,16 @@ public class Mockito extends ArgumentMatchers {
             return null;
         });
     }
-    
+
     public static MockSettings withSettings() {
+        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<MockSettings>) () ->
-                new MockSettingsImpl().defaultAnswer(RETURNS_DEFAULTS));
+                new MockSettingsImpl().callerClass(callerClass).defaultAnswer(RETURNS_DEFAULTS));
+    }
+
+    public static MockSettings withSettings(Class<?> callerClass) {
+        return AccessController.doPrivileged((PrivilegedAction<MockSettings>) () ->
+                new MockSettingsImpl().callerClass(callerClass).defaultAnswer(RETURNS_DEFAULTS));
     }
 
     public static VerificationMode description(String description) {

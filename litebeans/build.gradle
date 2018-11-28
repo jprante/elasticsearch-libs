@@ -1,6 +1,3 @@
-plugins {
-    id 'java'
-}
 
 apply plugin: 'org.xbib.gradle.plugin.shadow'
 

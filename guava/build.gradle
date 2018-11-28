@@ -20,12 +20,12 @@ sourceSets {
 
 dependencies {
     source "com.google.guava:guava:${project.property('guava.version')}:sources"
-    binary "com.google.guava:guava:${project.property('guava.version')}"
+    // internal guava mumbo jumbo
     source "com.google.guava:failureaccess:1.0:sources"
     source "com.google.code.findbugs:jsr305:3.0.2:sources"
-    source "org.checkerframework:checker-qual:2.5.6:sources" // 2.5.2
     source "com.google.errorprone:error_prone_annotations:2.2.0:sources"
     source "com.google.j2objc:j2objc-annotations:1.1:sources"
+    source "org.checkerframework:checker-qual:2.5.6:sources" // 2.5.2
     source "org.codehaus.mojo:animal-sniffer-annotations:1.17:sources"
 }
 
@@ -63,6 +63,7 @@ afterEvaluate {
     javadoc {
         inputs.property("moduleName", 'org.xbib.elasticsearch.guava')
         doFirst {
+            options.addStringOption('Xdoclint:none', '-quiet')
             options.addStringOption('-module-path', classpath.asPath)
             classpath = files()
         }

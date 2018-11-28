@@ -67,7 +67,7 @@ public final class Randomness {
   }
 
   /** Starting seed, read-only for tests. */
-  long getSeed() {
+  public long getSeed() {
     return seed;
   }
   

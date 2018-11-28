@@ -14,7 +14,7 @@ import com.google.common.base.Charsets;
 public class Deserializer {
   private JsonReader input;
 
-  public Deserializer(InputStream is, ClassLoader refLoader) throws IOException {
+  public Deserializer(InputStream is/*, ClassLoader refLoader*/) throws IOException {
     input = new JsonReader(new InputStreamReader(is, Charsets.UTF_8));
     input.setLenient(true);
   }

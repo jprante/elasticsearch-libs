@@ -1,0 +1,7 @@
+org.apache.lucene.testframework.codecs.mockrandom.MockRandomPostingsFormat
+org.apache.lucene.testframework.codecs.ramonly.RAMOnlyPostingsFormat
+org.apache.lucene.testframework.codecs.blockterms.LuceneFixedGap
+org.apache.lucene.testframework.codecs.blockterms.LuceneVarGapFixedInterval
+org.apache.lucene.testframework.codecs.blockterms.LuceneVarGapDocFreqInterval
+org.apache.lucene.testframework.codecs.bloom.TestBloomFilteredLucenePostings
+org.apache.lucene.testframework.codecs.asserting.AssertingPostingsFormat

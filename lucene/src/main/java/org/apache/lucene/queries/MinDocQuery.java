@@ -48,7 +48,7 @@ public final class MinDocQuery extends Query {
         this(minDoc, null);
     }
 
-    MinDocQuery(int minDoc, Object readerId) {
+    public MinDocQuery(int minDoc, Object readerId) {
         this.minDoc = minDoc;
         this.readerId = readerId;
     }

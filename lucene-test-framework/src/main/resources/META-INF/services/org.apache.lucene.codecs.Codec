@@ -1,0 +1,6 @@
+org.apache.lucene.testframework.codecs.asserting.AssertingCodec
+org.apache.lucene.testframework.codecs.cheapbastard.CheapBastardCodec
+org.apache.lucene.testframework.codecs.compressing.FastCompressingCodec
+org.apache.lucene.testframework.codecs.compressing.FastDecompressionCompressingCodec
+org.apache.lucene.testframework.codecs.compressing.HighCompressionCompressingCodec
+org.apache.lucene.testframework.codecs.compressing.dummy.DummyCompressingCodec

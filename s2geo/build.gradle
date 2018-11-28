@@ -49,6 +49,7 @@ afterEvaluate {
     javadoc {
         inputs.property("moduleName", 'org.xbib.elasticsearch.s2geo')
         doFirst {
+            options.addStringOption('Xdoclint:none', '-quiet')
             options.addStringOption('-module-path', classpath.asPath)
             classpath = files()
         }

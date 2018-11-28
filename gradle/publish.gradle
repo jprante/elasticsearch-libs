@@ -83,6 +83,6 @@ task sonatypeUpload(type: Upload) {
     }
 }
 
-nexusStaging {
-    packageGroup = "org.xbib"
-}
+//nexusStaging {
+//    packageGroup = "org.xbib"
+//}

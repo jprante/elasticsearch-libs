@@ -11,6 +11,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.lang.module.ModuleReference;
+import java.lang.module.ResolvedModule;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryNotEmptyException;
@@ -18,9 +21,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,12 +36,16 @@ import java.util.Date;
 import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -48,7 +57,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectComponent;
@@ -63,9 +71,12 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.PropertySet;
 import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
+import org.apache.tools.ant.types.resources.FileResource;
 import org.apache.tools.ant.types.resources.Resources;
 import org.apache.tools.ant.util.LoaderUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.runner.Description;
+import org.junit.runner.JUnitCore;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -118,7 +129,7 @@ import org.simpleframework.xml.core.Persister;
  *  Report listeners use Google Guava's {@link EventBus} and receive full information
  *  about tests' execution (including skipped, assumption-skipped tests, streamlined
  *  output and error stream chunks, etc.).</li>
- *  <li>JUnit 4.10+ is required both for the task and for the tests classpath. 
+ *  <li>JUnit 4.10+ is required both for the task and for the tests module path.
  *  Older versions will cause build failure.</li>
  *  <li>Integration with {@link RandomizedRunner} (randomization seed is passed to
  *  children JVMs).</li>
@@ -153,7 +164,7 @@ public class JUnit4 extends Task {
   };
 
   /** Name of the antlib resource inside JUnit4 JAR. */
-  public static final String ANTLIB_RESOURCE_NAME = "com/carrotsearch/junit4/antlib.xml";
+  public static final String ANTLIB_RESOURCE_NAME = "com/carrotsearch/junit4/ant/tasks/antlib.xml";
 
   /** @see #setParallelism(String) */
   public static final Object PARALLELISM_AUTO = "auto";
@@ -294,12 +305,6 @@ public class JUnit4 extends Task {
   private List<SuiteBalancer> balancers = new ArrayList<>();
 
   /**
-   * Class loader used to resolve annotations and classes referenced from annotations
-   * when {@link Description}s containing them are passed from slaves.
-   */
-  private AntClassLoader testsClassLoader;
-
-  /**
    * @see #setParallelism(String)
    */
   private String parallelism = DEFAULT_PARALLELISM;
@@ -312,7 +317,7 @@ public class JUnit4 extends Task {
   /**
    * A list of temporary files to leave or remove if build passes.
    */
-  private List<Path> temporaryFiles = Collections.synchronizedList(new ArrayList<Path>());
+  private List<Path> temporaryFiles = Collections.synchronizedList(new ArrayList<>());
 
   /**
    * @see #setSeed(String)
@@ -330,11 +335,9 @@ public class JUnit4 extends Task {
   private NonEmptyWorkDirectoryAction nonEmptyWorkDirAction = DEFAULT_NON_EMPTY_WORKDIR_ACTION;
 
   /**
-   * Multiple path resolution in {@link CommandlineJava#getCommandline()} is very slow
+   * Path resolution in {@link CommandlineJava#getCommandline()} is very slow
    * so we construct and canonicalize paths.
    */
-  private org.apache.tools.ant.types.Path classpath;
-  private org.apache.tools.ant.types.Path bootclasspath;
   private org.apache.tools.ant.types.Path modulepath;
 
   /**
@@ -493,7 +496,7 @@ public class JUnit4 extends Task {
 
   /**
    * Initializes custom prefix for all junit4 properties. This must be consistent
-   * across all junit4 invocations if done from the same classpath. Use only when REALLY needed.
+   * across all junit4 invocations. Use only when REALLY needed.
    */
   public void setPrefix(String prefix) {
     if (!Strings.isNullOrEmpty(getProject().getUserProperty(SYSPROP_PREFIX()))) {
@@ -527,8 +530,6 @@ public class JUnit4 extends Task {
     super.setProject(project);
 
     this.resources.setProject(project);
-    this.classpath = new org.apache.tools.ant.types.Path(getProject());
-    this.bootclasspath = new org.apache.tools.ant.types.Path(getProject());
     this.modulepath = new org.apache.tools.ant.types.Path(getProject());
   }
   
@@ -762,18 +763,18 @@ public class JUnit4 extends Task {
    * 
    * @return reference to the classpath in the embedded java command line
    */
-  public org.apache.tools.ant.types.Path createClasspath() {
+  /*public org.apache.tools.ant.types.Path createClasspath() {
     return classpath.createPath();
-  }
+  }*/
 
   /**
    * Adds a path to the bootclasspath.
    * 
    * @return reference to the bootclasspath in the embedded java command line
    */
-  public org.apache.tools.ant.types.Path createBootclasspath() {
+  /*public org.apache.tools.ant.types.Path createBootclasspath() {
     return bootclasspath.createPath();
-  }
+  }*/
 
   public org.apache.tools.ant.types.Path createModulepath() {
     return modulepath.createPath();
@@ -893,25 +894,14 @@ public class JUnit4 extends Task {
     createJvmarg().setValue("-D" + SYSPROP_PREFIX() + "=" + CURRENT_PREFIX());
     createJvmarg().setValue("-D" + SYSPROP_RANDOM_SEED() + "=" + random);
 
-    // Resolve paths first.
-    this.classpath = resolveFiles(classpath);
-    this.bootclasspath = resolveFiles(bootclasspath);
+    // Resolve module path first.
+    createJvmarg().setValue("--add-modules=ALL-MODULE-PATH");
     this.modulepath = resolveFiles(modulepath);
-    getCommandline().createClasspath(getProject()).add(classpath);
-    getCommandline().createBootclasspath(getProject()).add(bootclasspath);
     getCommandline().createModulepath(getProject()).add(modulepath);
 
     // Setup a class loader over test classes. This will be used for loading annotations
     // and referenced classes. This is kind of ugly, but mirroring annotation content will
     // be even worse and Description carries these.
-
-    // TODO: [GH-211] we should NOT be using any actual classes, annotations, etc. 
-    // from client code. Everything should be a mirror.
-    testsClassLoader = new AntClassLoader(
-        this.getClass().getClassLoader(),
-        getProject(),
-        getCommandline().getClasspath(),
-        true);
 
     // Pass method filter if any.
     String testMethodFilter = Strings.emptyToNull(getProject().getProperty(SYSPROP_TESTMETHOD()));
@@ -1164,10 +1154,10 @@ public class JUnit4 extends Task {
     try {
       Class<?> clazz = Class.forName("org.junit.runner.Description");
       if (!Serializable.class.isAssignableFrom(clazz)) {
-        throw new BuildException("At least JUnit version 4.10 is required on junit4's taskdef classpath.");
+        throw new BuildException("At least JUnit version 4.10 is required on junit4's taskdef module path.");
       }
     } catch (ClassNotFoundException e) {
-      throw new BuildException("JUnit JAR must be added to junit4 taskdef's classpath.");
+      throw new BuildException("JUnit JAR must be added to junit4 taskdef's module path.");
     }
   }
 
@@ -1405,12 +1395,36 @@ public class JUnit4 extends Task {
     // Prepare command line for java execution.
     CommandlineJava commandline;
     commandline = (CommandlineJava) getCommandline().clone();
-    commandline.createModulepath(getProject()).add(addSlaveClasspath());
-    commandline.setModule("org.xbib.randomizedtesting.junit.ant/com.carrotsearch.ant.tasks.junit4.slave.SlaveMainSafe");
-    //commandline.createClasspath(getProject()).add(addSlaveClasspath());
-    //commandline.setClassname(SlaveMainSafe.class.getName());
+    commandline.createModulepath(getProject()).add(addSlaveModulepath());
+    // probleme here: the caller (Gradle daemon etc.) is not enforced to run under Java modules.
+    // Looking up "getModule" will return null at runtime in such cases.
+    // So we set static module name here.
+    String moduleName = //SlaveMainSafe.class.getModule().getName() + "/" + SlaveMainSafe.class.getName();
+            "org.xbib.elasticsearch.randomizedtesting.junit.ant/com.carrotsearch.ant.tasks.junit4.slave.SlaveMainSafe";
+    commandline.setModule(moduleName);
     if (slave.slaves == 1) {
       commandline.createArgument().setValue(SlaveMain.OPTION_FREQUENT_FLUSH);
+    }
+
+    // set temp dir system property
+    Variable tempDirVariable = new Variable();
+    tempDirVariable.setKey("junit4.tempDir");
+    tempDirVariable.setValue(getTempDir().toString());
+    commandline.addSysproperty(tempDirVariable);
+
+    // set module path jars to system properties for easy management in security manager
+    for (Resource resource : commandline.getModulepath()) {
+        if (!resource.isDirectory() && resource instanceof FileResource) {
+            FileResource fileResource = (FileResource) resource;
+            String key = resource.getName().endsWith("-tests.jar") ?
+                    resource.getName().replaceAll("-\\d\\.\\d.*\\-tests.jar", "-tests") :
+                    resource.getName().replaceAll("-\\d\\.\\d.*\\.jar", "");
+            String value = fileResource.getFile().getAbsolutePath();
+            Variable codebase = new Variable();
+            codebase.setKey("codebase." + key);
+            codebase.setValue(value);
+            commandline.addSysproperty(codebase);
+        }
     }
 
     // Set up full output files.
@@ -1517,9 +1531,9 @@ public class JUnit4 extends Task {
         final int exitStatus = execute.getExitValue();
         switch (exitStatus) {
           case SlaveMain.ERR_NO_JUNIT:
-            throw new BuildException("Forked JVM's modulepath/classpath must include a junit4 JAR.");
+            throw new BuildException("Forked JVM's modulepath must include a junit4 JAR.");
           case SlaveMain.ERR_OLD_JUNIT:
-            throw new BuildException("Forked JVM's modulepath/classpath must use JUnit 4.10 or newer.");
+            throw new BuildException("Forked JVM's modulepath must use JUnit 4.10 or newer.");
           default:
             Closeables.close(sysout, false);
             Closeables.close(syserr, false);
@@ -1650,7 +1664,7 @@ public class JUnit4 extends Task {
     try {
       final LocalSlaveStreamHandler streamHandler = 
           new LocalSlaveStreamHandler(
-              eventBus, testsClassLoader, System.err, eventStream, 
+              eventBus, /*testsClassLoader,*/ System.err, eventStream,
               sysout, syserr, heartbeat, streamsBuffer);
 
       // Add certain properties to allow identification of the forked JVM from within
@@ -1880,23 +1894,24 @@ public class JUnit4 extends Task {
   }
 
   /**
-   * Adds a classpath source which contains the given resource.
+   * Adds a module path source which contains the given resource.
    * 
    * TODO: [GH-213] this is extremely ugly; separate the code required to run on the
    * forked JVM into an isolated bundle and either create it on-demand (in temp.
-   * files location?) or locate it in classpath somehow (in a portable way).
+   * files location?) or locate it in module path somehow (in a portable way).
    */
-  private org.apache.tools.ant.types.Path addSlaveClasspath() {
+  private org.apache.tools.ant.types.Path addOldSlaveModulepath() {
     org.apache.tools.ant.types.Path path = new org.apache.tools.ant.types.Path(getProject());
 
     String[] REQUIRED_SLAVE_CLASSES = {
+        JUnitCore.class.getName(), // junit
+        CoreMatchers.class.getName(), // hamcrest
+        org.apache.tools.ant.types.Path.class.getName(), // ant
         SlaveMain.class.getName(), // randomizedtest-junit4-ant
         MethodGlobFilter.class.getName(), // randomizedtesting
-        //TeeOutputStream.class.getName() // randomizedtesting
         Strings.class.getName(), // guava
         ClassReader.class.getName(), // asm
-        Persister.class.getName(), // simpleframework
-        org.apache.tools.ant.types.Path.class.getName()    // ant
+        Persister.class.getName() // simpleframework
     };
 
     for (String clazz : REQUIRED_SLAVE_CLASSES) {
@@ -1905,9 +1920,81 @@ public class JUnit4 extends Task {
       if (f != null) {
         path.createPath().setLocation(f);
       } else {
-        throw new BuildException("Could not locate classpath for resource: " + resource);
+        throw new BuildException("Could not locate path for resource: " + resource);
       }
     }
     return path;
   }
+
+    private org.apache.tools.ant.types.Path addSlaveModulepath() {
+        org.apache.tools.ant.types.Path path = new org.apache.tools.ant.types.Path(getProject());
+        for (URI uri : parseModulePath()) {
+            path.createPath().setLocation(Paths.get(uri).toFile());
+        }
+        return path;
+    }
+
+    private static Set<URI> parseModulePath() {
+        Deque<ModuleLayer> layerOrder = new ArrayDeque<>();
+        Set<ModuleLayer> layerVisited = new HashSet<>();
+        CallerResolver callerResolver = new CallerResolver();
+        Class<?>[] callStack = callerResolver.getClassContext();
+        for (Class<?> cl : callStack) {
+            ModuleLayer layer = cl.getModule().getLayer();
+            if (layer != null) {
+                findLayerOrder(layer, layerVisited, layerOrder);
+            }
+        }
+        ModuleLayer bootLayer = ModuleLayer.boot();
+        findLayerOrder(bootLayer, layerVisited, layerOrder);
+        Set<ModuleReference> addedModules = new HashSet<>();
+        List<Map.Entry<ModuleReference, ModuleLayer>> nonSystemModuleRefs = new ArrayList<>();
+        for (ModuleLayer layer : layerOrder) {
+            List<ResolvedModule> modulesInLayer = new ArrayList<>(layer.configuration().modules());
+            modulesInLayer.sort(Comparator.comparing(e -> e.reference().descriptor().name()));
+            for (ResolvedModule module : modulesInLayer) {
+                ModuleReference moduleReference = module.reference();
+                if (addedModules.add(moduleReference)) {
+                    String moduleName = moduleReference.descriptor().name();
+                    if (!isSystemModule(moduleName)) {
+                        nonSystemModuleRefs.add(new AbstractMap.SimpleEntry<>(moduleReference, layer));
+                    }
+                }
+            }
+        }
+        Set<URI> uriElements = new LinkedHashSet<>();
+        for (Map.Entry<ModuleReference, ModuleLayer> e : nonSystemModuleRefs) {
+            ModuleReference ref = e.getKey();
+            Optional<URI> location = ref.location();
+            location.ifPresent(uriElements::add);
+        }
+        return Collections.unmodifiableSet(uriElements);
+    }
+
+    private static void findLayerOrder(ModuleLayer layer, Set<ModuleLayer> layerVisited, Deque<ModuleLayer> layersOut) {
+        if (layerVisited.add(layer)) {
+            List<ModuleLayer> parents = layer.parents();
+            for (ModuleLayer parent : parents) {
+                findLayerOrder(parent, layerVisited, layersOut);
+            }
+            layersOut.push(layer);
+        }
+    }
+
+    private static boolean isSystemModule(final String moduleName) {
+        return moduleName.startsWith("java.")
+                || moduleName.startsWith("javax.")
+                || moduleName.startsWith("javafx.")
+                || moduleName.startsWith("jdk.")
+                || moduleName.startsWith("oracle.");
+    }
+
+    private static final class CallerResolver extends SecurityManager {
+        @Override
+        protected Class<?>[] getClassContext() {
+            return super.getClassContext();
+        }
+    }
+
+
 }

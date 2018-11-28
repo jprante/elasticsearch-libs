@@ -1,0 +1,74 @@
+configurations {
+    mains
+    tests
+}
+
+dependencies {
+    compile project(':lucene')
+    compile project(':lucene-codecs')
+    compile project(':randomizedtesting')
+}
+
+afterEvaluate {
+    compileJava {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.lucene.testframework')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath
+            ]
+            classpath = files()
+        }
+    }
+    compileTestJava {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.lucene.testframework.test')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath
+            ]
+            classpath = files()
+        }
+    }
+    test {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.lucene.testframework.test')
+        dependsOn 'jar', 'testJar'
+        doFirst {
+            classpath = files(configurations.testRuntime) + configurations.mains.artifacts.files + configurations.tests.artifacts.files
+            jvmArgs = [
+                    '--module-path', classpath.asPath,
+                    '--add-modules', 'org.xbib.elasticsearch.lucene.testframework',
+                    '--add-modules', 'org.xbib.elasticsearch.lucene.testframework.test'
+            ]
+            scanForTestClasses = false
+            include "**/Test*.class"
+        }
+    }
+    javadoc {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.lucene.testframework')
+        doFirst {
+            options.addStringOption('-module-path', classpath.asPath)
+            classpath = files()
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier 'javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+task testJar(type: Jar) {
+    group = 'build'
+    from sourceSets.test.output
+    classifier 'tests'
+}
+
+artifacts {
+    mains jar
+    tests testJar
+    archives sourcesJar, javadocJar, testJar
+}

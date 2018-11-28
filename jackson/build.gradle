@@ -44,6 +44,7 @@ task unpackSource(type: Copy) {
             into "$buildDir/generated-src/java"
             exclude '**/Java7SupportImpl.java'
             exclude '**/JaxbAnnotationIntrospector.java'
+            exclude '**/YAMLGenerator.java'
         }
     }
 }
@@ -68,6 +69,7 @@ afterEvaluate {
     javadoc {
         inputs.property("moduleName", 'org.xbib.elasticsearch.jackson')
         doFirst {
+            options.addStringOption('Xdoclint:none', '-quiet')
             options.addStringOption('-module-path', classpath.asPath)
             classpath = files()
         }

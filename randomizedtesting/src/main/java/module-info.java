@@ -1,4 +1,4 @@
-module org.xbib.randomizedtesting {
+module org.xbib.elasticsearch.randomizedtesting {
 
     exports com.carrotsearch.randomizedtesting;
     exports com.carrotsearch.randomizedtesting.annotations;

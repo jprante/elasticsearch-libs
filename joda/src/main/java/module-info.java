@@ -26,6 +26,10 @@ module org.xbib.elasticsearch.joda {
     opens org.joda.time.tz.data;
     opens org.joda.time.tz.data.Africa;
     opens org.joda.time.tz.data.America;
+    opens org.joda.time.tz.data.America.Argentina;
+    opens org.joda.time.tz.data.America.Indiana;
+    opens org.joda.time.tz.data.America.Kentucky;
+    opens org.joda.time.tz.data.America.North_Dakota;
     opens org.joda.time.tz.data.Antarctica;
     opens org.joda.time.tz.data.Arctic;
     opens org.joda.time.tz.data.Asia;
