@@ -1,0 +1,151 @@
+
+apply plugin: 'org.xbib.gradle.plugin.shadow'
+
+configurations {
+    source
+    binary
+    mains
+    tests
+}
+
+sourceSets {
+    generated {
+        java {
+            srcDir "$buildDir/generated-src"
+        }
+        output.dir("$buildDir/generated-src", builtBy: 'sourceDownload')
+    }
+    main {
+        java {
+            srcDirs += sourceSets.generated.java.srcDirs
+        }
+    }
+}
+
+dependencies {
+    source "io.netty:netty-buffer:${rootProject.property('netty.version')}:sources"
+    source "io.netty:netty-common:${rootProject.property('netty.version')}:sources"
+    source "io.netty:netty-codec:${rootProject.property('netty.version')}:sources"
+    source "io.netty:netty-codec-http:${rootProject.property('netty.version')}:sources"
+    source "io.netty:netty-codec-http2:${rootProject.property('netty.version')}:sources"
+    source "io.netty:netty-handler:${rootProject.property('netty.version')}:sources"
+    source "io.netty:netty-resolver:${rootProject.property('netty.version')}:sources"
+    source "io.netty:netty-transport:${rootProject.property('netty.version')}:sources"
+    source "io.netty:netty-transport-native-unix-common:${project.property('netty.version')}:sources"
+    source "io.netty:netty-transport-native-epoll:${project.property('netty.version')}:sources"
+    source "io.netty:netty-tcnative-boringssl-static:${project.property('tcnative.version')}:sources"
+    source "org.jctools:jctools-core:${rootProject.property('jctools.version')}:sources"
+
+    compileOnly "com.jcraft:jzlib:${rootProject.property('jzlib.version')}"
+    compileOnly "net.jpountz.lz4:lz4:${rootProject.property('lz4.version')}"
+    compileOnly "com.ning:compress-lzf:${rootProject.property('lzf.version')}"
+    compileOnly "com.github.jponge:lzma-java:${rootProject.property('lzma.version')}"
+    compileOnly "com.google.protobuf:protobuf-java:${rootProject.property('protobuf.version')}"
+    compileOnly "com.google.protobuf.nano:protobuf-javanano:${rootProject.property('protobuf-nano.version')}"
+    compileOnly "org.jboss.marshalling:jboss-marshalling:${rootProject.property('marshalling.version')}"
+    compileOnly "org.conscrypt:conscrypt-openjdk:${rootProject.property('conscrypt.version')}"
+    compileOnly "org.bouncycastle:bcpkix-jdk15on:${project.property('bouncycastle.version')}"
+    compileOnly "org.eclipse.jetty.alpn:alpn-api:${project.property('alpn-api.version')}"
+    compileOnly "org.eclipse.jetty.npn:npn-api:${project.property('npn-api.version')}"
+    compileOnly "commons-logging:commons-logging:${project.property('commons-logging.version')}"
+    compileOnly "org.slf4j:slf4j-api:${project.property('slf4j-api.version')}"
+    compileOnly project(':log4j')
+}
+
+task unpackSource(type: Copy) {
+    configurations.source.each {
+        from zipTree(it)
+        into "$buildDir/generated-src/java"
+        exclude '**/SelfSignedCertificate.java' // drop, because of package sun.security.x509
+        exclude '**/OpenJdkSelfSignedCertGenerator.java' // drop, because of package sun.security.x509
+        exclude '**/BouncyCastleSelfSignedCertGenerator.java' // drop, because of package sun.security.x509
+        exclude '**/LoggingHandler.java' // wrong export of InternalLogger!
+    }
+}
+
+task unpackResources(type: Copy) {
+    configurations.binary.each {
+        from zipTree(it)
+        into "$buildDir/resources/main"
+    }
+}
+
+afterEvaluate {
+    compileJava {
+        dependsOn unpackSource, unpackResources
+        inputs.property("moduleName", 'org.xbib.elasticsearch.netty')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath
+            ]
+            classpath = files()
+        }
+    }
+    compileTestJava {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.netty.test')
+        doFirst {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath
+            ]
+            classpath = files()
+        }
+    }
+    javadoc {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.netty')
+        doFirst {
+            options.addStringOption('-module-path', classpath.asPath)
+            classpath = files()
+        }
+    }
+    test {
+        inputs.property("moduleName", 'org.xbib.elasticsearch.netty.test')
+        dependsOn 'jar', 'testJar'
+        doFirst {
+            classpath = files(configurations.testRuntime) + configurations.mains.artifacts.files + configurations.tests.artifacts.files
+            jvmArgs = [
+                    '--module-path', classpath.asPath,
+                    '--add-modules', 'ALL-MODULE-PATH'
+            ]
+            testLogging.showStandardStreams = true
+            scanForTestClasses = false
+            include "**/Test*.class"
+            exclude '**/Test*$*.class'
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier 'javadoc'
+}
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+}
+
+task testJar(type: Jar) {
+    group = 'build'
+    from sourceSets.test.output
+    classifier 'tests'
+}
+
+artifacts {
+    mains jar
+    tests testJar
+    archives sourcesJar, javadocJar, testJar, shadowJar
+}
+
+shadowJar {
+    classifier = 'all'
+    relocate('org.jctools', 'io.netty.util.internal.shaded.org.jctools')
+    artifacts {
+        shadow(tasks.shadowJar.archivePath) {
+            builtBy shadowJar
+        }
+    }
+}

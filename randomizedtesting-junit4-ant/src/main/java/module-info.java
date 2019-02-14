@@ -14,6 +14,10 @@ module org.xbib.elasticsearch.randomizedtesting.junit.ant {
     exports com.carrotsearch.ant.tasks.junit4.tools;
 
     opens com.carrotsearch.ant.tasks.junit4;
+    opens com.carrotsearch.ant.tasks.junit4.templates.json;
+    opens com.carrotsearch.ant.tasks.junit4.templates.json.css;
+    opens com.carrotsearch.ant.tasks.junit4.templates.json.img;
+    opens com.carrotsearch.ant.tasks.junit4.templates.json.js;
 
     requires java.xml;
     requires java.management;

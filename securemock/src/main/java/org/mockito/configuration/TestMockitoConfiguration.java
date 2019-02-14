@@ -2,15 +2,22 @@
  * Copyright (c) 2007 Mockito contributors
  * This program is made available under the terms of the MIT License.
  */
-package org.mockito.test.configuration;
+package org.mockito.configuration;
 
+import org.mockito.Mockito;
+import org.mockito.internal.configuration.InjectingAnnotationEngine;
 import org.mockito.stubbing.Answer;
-import org.mockito.configuration.AnnotationEngine;
-import org.mockito.configuration.DefaultMockitoConfiguration;
-import org.mockito.configuration.IMockitoConfiguration;
-import org.mockito.test.mockitousage.configuration.CustomizedAnnotationForSmartMockTest;
 
-public class MockitoConfiguration extends DefaultMockitoConfiguration implements IMockitoConfiguration {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Set;
+
+import static java.lang.annotation.ElementType.FIELD;
+
+public class TestMockitoConfiguration extends DefaultMockitoConfiguration implements IMockitoConfiguration {
 
     private Answer<Object> overriddenDefaultAnswer = null;
 
@@ -54,7 +61,7 @@ public class MockitoConfiguration extends DefaultMockitoConfiguration implements
         if (this.overriddenEngine != null) {
             return this.overriddenEngine;
         }
-        return new CustomizedAnnotationForSmartMockTest.CustomInjectingAnnotationEngine();
+        return new CustomInjectingAnnotationEngine();
     }
 
     @Override
@@ -66,5 +73,26 @@ public class MockitoConfiguration extends DefaultMockitoConfiguration implements
     public boolean enableClassCache() {
         return enableClassCache;
     }
+
+
+    public static class CustomInjectingAnnotationEngine extends InjectingAnnotationEngine {
+        @Override
+        protected void onInjection(Object testClassInstance, Class<?> clazz, Set<Field> mockDependentFields, Set<Object> mocks) {
+            for (Field field : clazz.getDeclaredFields()) {
+                if (field.isAnnotationPresent(SmartMock.class)) {
+                    field.setAccessible(true);
+                    try {
+                        field.set(Modifier.isStatic(field.getModifiers()) ? null : testClassInstance, Mockito.mock(field.getType(), Mockito.RETURNS_SMART_NULLS));
+                    } catch (Exception exception) {
+                        throw new AssertionError(exception.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    @Target({FIELD})
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface SmartMock {}
 
 }

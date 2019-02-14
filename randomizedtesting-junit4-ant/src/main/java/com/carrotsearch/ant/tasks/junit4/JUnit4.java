@@ -1399,8 +1399,7 @@ public class JUnit4 extends Task {
     // probleme here: the caller (Gradle daemon etc.) is not enforced to run under Java modules.
     // Looking up "getModule" will return null at runtime in such cases.
     // So we set static module name here.
-    String moduleName = //SlaveMainSafe.class.getModule().getName() + "/" + SlaveMainSafe.class.getName();
-            "org.xbib.elasticsearch.randomizedtesting.junit.ant/com.carrotsearch.ant.tasks.junit4.slave.SlaveMainSafe";
+    String moduleName = "org.xbib.elasticsearch.randomizedtesting.junit.ant/com.carrotsearch.ant.tasks.junit4.slave.SlaveMainSafe";
     commandline.setModule(moduleName);
     if (slave.slaves == 1) {
       commandline.createArgument().setValue(SlaveMain.OPTION_FREQUENT_FLUSH);
@@ -1524,6 +1523,7 @@ public class JUnit4 extends Task {
       OutputStream syserr = closer.register(new BufferedOutputStream(Files.newOutputStream(syserrFile)));
       RandomAccessFile streamsBuffer = closer.register(new RandomAccessFile(streamsBufferFile.toFile(), "rw"));
 
+      log("Forking JVM " + commandline, Project.MSG_DEBUG);
       Execute execute = forkProcess(slave, eventBus, commandline, eventStream, sysout, syserr, streamsBuffer);
       log("Forked JVM J" + slave.id + " finished with exit code: " + execute.getExitValue(), Project.MSG_DEBUG);
 

@@ -13,10 +13,10 @@ import org.mockito.test.mockitoutil.TestBase;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-public class ClassPathLoaderTest extends TestBase {
+public class ConfigurationLoaderTest extends TestBase {
 
     @Test
-    public void shouldReadConfigurationClassFromClassPath() {
+    public void shouldReadConfigurationClass() {
         ConfigurationAccess.getConfig().overrideDefaultAnswer(new Answer<Object>() {
             public Object answer(InvocationOnMock invocation) {
                 return "foo";

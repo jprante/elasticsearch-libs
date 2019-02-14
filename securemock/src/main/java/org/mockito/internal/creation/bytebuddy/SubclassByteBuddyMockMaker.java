@@ -13,8 +13,6 @@ import org.mockito.internal.util.Platform;
 import org.mockito.invocation.MockHandler;
 import org.mockito.mock.MockCreationSettings;
 
-import java.lang.reflect.Modifier;
-
 import static org.mockito.internal.util.StringUtil.join;
 
 /**
@@ -23,7 +21,6 @@ import static org.mockito.internal.util.StringUtil.join;
  * This mock maker tries to create a subclass to represent a mock. It uses the given mock settings, that contains
  * the type to mock, extra interfaces, and serialization support.
  *
- * <p>
  * The type to mock has to be not final and not part of the JDK. THe created mock will implement extra interfaces
  * if any. And will implement <code>Serializable</code> if this settings is explicitly set.
  */

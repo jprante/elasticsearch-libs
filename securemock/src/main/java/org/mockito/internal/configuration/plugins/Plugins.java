@@ -15,13 +15,11 @@ import org.mockito.plugins.StackTraceCleanerProvider;
  */
 public class Plugins {
 
-    private static final PluginRegistry registry = new PluginRegistry();
-
     /**
      * The implementation of the stack trace cleaner
      */
     public static StackTraceCleanerProvider getStackTraceCleanerProvider() {
-        return registry.getStackTraceCleanerProvider();
+        return PluginRegistry.getStackTraceCleanerProvider();
     }
 
     /**
@@ -31,7 +29,7 @@ public class Plugins {
      * {@link MockMaker} extension exists or is visible in the current classpath.</p>
      */
     public static MockMaker getMockMaker() {
-        return registry.getMockMaker();
+        return PluginRegistry.getMockMaker();
     }
 
     /**
@@ -41,7 +39,7 @@ public class Plugins {
      * {@link InstantiatorProvider} extension exists or is visible in the current classpath.</p>
      */
     public static InstantiatorProvider getInstantiatorProvider() {
-      return registry.getInstantiatorProvider();
+      return PluginRegistry.getInstantiatorProvider();
     }
 
     /**
@@ -51,7 +49,7 @@ public class Plugins {
      * {@link AnnotationEngine} extension exists or is visible in the current classpath.</p>
      */
     public static AnnotationEngine getAnnotationEngine() {
-        return registry.getAnnotationEngine();
+        return PluginRegistry.getAnnotationEngine();
     }
 
     /**

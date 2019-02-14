@@ -32,7 +32,7 @@ public class GlobalConfiguration implements IMockitoConfiguration, Serializable 
 
     private IMockitoConfiguration createConfig() {
         IMockitoConfiguration defaultConfiguration = new DefaultMockitoConfiguration();
-        IMockitoConfiguration config = new ClassPathLoader().loadConfiguration();
+        IMockitoConfiguration config = new ConfigurationLoader().loadConfiguration();
         if (config != null) {
             return config;
         } else {

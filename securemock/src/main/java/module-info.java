@@ -12,6 +12,8 @@ module org.xbib.elasticsearch.securemock {
     exports org.mockito.internal;
     exports org.mockito.internal.configuration;
     exports org.mockito.internal.configuration.injection;
+    exports org.mockito.internal.configuration.injection.filter;
+    exports org.mockito.internal.configuration.injection.scanner;
     exports org.mockito.internal.configuration.plugins;
     exports org.mockito.internal.creation;
     exports org.mockito.internal.creation.bytebuddy;
@@ -24,11 +26,11 @@ module org.xbib.elasticsearch.securemock {
     exports org.mockito.internal.exceptions.util;
     exports org.mockito.internal.framework;
     exports org.mockito.internal.hamcrest;
+    exports org.mockito.internal.handler;
+    exports org.mockito.internal.invocation;
     exports org.mockito.internal.invocation.finder;
     exports org.mockito.internal.junit;
     exports org.mockito.internal.junit.util;
-    exports org.mockito.internal.handler;
-    exports org.mockito.internal.invocation;
     exports org.mockito.internal.listeners;
     exports org.mockito.internal.matchers;
     exports org.mockito.internal.matchers.apachecommons;
@@ -55,28 +57,77 @@ module org.xbib.elasticsearch.securemock {
     exports org.mockito.listeners;
     exports org.mockito.mock;
     exports org.mockito.plugins;
-    exports org.mockito.runners;
     exports org.mockito.quality;
+    exports org.mockito.runners;
     exports org.mockito.session;
     exports org.mockito.stubbing;
     exports org.mockito.verification;
-    exports org.objenesis;
-    exports org.objenesis.instantiator;
     exports net.bytebuddy;
     exports net.bytebuddy.agent;
+    exports net.bytebuddy.asm;
+    exports net.bytebuddy.build;
+    exports net.bytebuddy.description;
+    exports net.bytebuddy.description.annotation;
+    exports net.bytebuddy.description.enumeration;
+    exports net.bytebuddy.description.field;
+    exports net.bytebuddy.description.method;
     exports net.bytebuddy.description.modifier;
     exports net.bytebuddy.description.type;
     exports net.bytebuddy.dynamic;
     exports net.bytebuddy.dynamic.loading;
     exports net.bytebuddy.dynamic.scaffold;
+    exports net.bytebuddy.dynamic.scaffold.inline;
+    exports net.bytebuddy.dynamic.scaffold.subclass;
     exports net.bytebuddy.implementation;
+    exports net.bytebuddy.implementation.attribute;
+    exports net.bytebuddy.implementation.auxiliary;
+    exports net.bytebuddy.implementation.bind;
+    exports net.bytebuddy.implementation.bind.annotation;
+    exports net.bytebuddy.implementation.bytecode;
+    exports net.bytebuddy.implementation.bytecode.assign;
+    exports net.bytebuddy.implementation.bytecode.collection;
+    exports net.bytebuddy.implementation.bytecode.constant;
+    exports net.bytebuddy.implementation.bytecode.member;
     exports net.bytebuddy.matcher;
+    exports net.bytebuddy.pool;
+    exports net.bytebuddy.utility;
+    exports net.bytebuddy.utility.privilege;
+    exports net.bytebuddy.utility.visitor;
+    exports org.objenesis;
+    exports org.objenesis.instantiator;
+    exports org.objenesis.instantiator.android;
+    exports org.objenesis.instantiator.annotations;
+    exports org.objenesis.instantiator.basic;
+    exports org.objenesis.instantiator.gcj;
+    exports org.objenesis.instantiator.perc;
+    exports org.objenesis.instantiator.sun;
+    exports org.objenesis.instantiator.util;
+    exports org.objenesis.strategy;
 
-    requires java.instrument; //java.lang.instrument.Instrumentation in InlineByteBuddyMockMaker
+    requires java.instrument; // java.lang.instrument.Instrumentation in InlineByteBuddyMockMaker
     requires java.management; // java.lang.management in ByteBuddyAgent
     requires jdk.unsupported; // sun.reflect.ReflectionFactory in org.xbib.securemock.objenesis.instantiator.sun.SunReflectionFactoryHelper.getReflectionFactoryClass
     requires org.objectweb.asm;
     requires org.objectweb.asm.commons;
     requires org.objectweb.asm.tree;
     requires junit;
+
+    uses org.mockito.configuration.IMockitoConfiguration;
+    uses org.mockito.plugins.MockMaker;
+    uses org.mockito.plugins.StackTraceCleanerProvider;
+    uses org.mockito.plugins.InstantiatorProvider;
+    uses org.mockito.plugins.AnnotationEngine;
+
+    provides org.mockito.configuration.IMockitoConfiguration
+            with org.mockito.configuration.DefaultMockitoConfiguration;
+    provides org.mockito.plugins.MockMaker
+            with org.mockito.internal.creation.bytebuddy.ByteBuddyMockMaker;
+    provides org.mockito.plugins.StackTraceCleanerProvider
+            with org.mockito.internal.exceptions.stacktrace.DefaultStackTraceCleanerProvider;
+    provides org.mockito.plugins.InstantiatorProvider
+            with org.mockito.internal.creation.instance.DefaultInstantiatorProvider;
+    provides org.mockito.plugins.AnnotationEngine
+            with org.mockito.internal.configuration.InjectingAnnotationEngine;
+
+
 }

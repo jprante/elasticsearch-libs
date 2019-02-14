@@ -20,7 +20,6 @@ configurations {
 }
 
 dependencies {
-    //source "org.mockito:mockito-core:${project.property('mockito.version')}:sources"
     source "org.objenesis:objenesis:${project.property('objenesis.version')}:sources"
     source "net.bytebuddy:byte-buddy:${project.property('bytebuddy.version')}:sources"
     source "net.bytebuddy:byte-buddy-agent:${project.property('bytebuddy.version')}:sources"

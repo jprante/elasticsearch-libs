@@ -5,8 +5,10 @@
 package org.mockito.internal.configuration;
 
 import org.mockito.configuration.IMockitoConfiguration;
-import org.mockito.exceptions.misusing.MockitoConfigurationException;
 import org.mockito.plugins.MockMaker;
+
+import java.util.Optional;
+import java.util.ServiceLoader;
 
 
 /**
@@ -45,30 +47,16 @@ import org.mockito.plugins.MockMaker;
  * </ul>
  * </p>
  */
-public class ClassPathLoader {
+public class ConfigurationLoader {
 
-    public static final String MOCKITO_CONFIGURATION_CLASS_NAME = "org.mockito.configuration.MockitoConfiguration";
 
     /**
      * @return configuration loaded from classpath or null
      */
     @SuppressWarnings({"unchecked"})
     public IMockitoConfiguration loadConfiguration() {
-        // Trying to get config from classpath
-        Class<?> configClass;
-        try {
-            configClass = Class.forName(MOCKITO_CONFIGURATION_CLASS_NAME);
-        } catch (ClassNotFoundException e) {
-            //that's ok, it means there is no global config, using default one.
-            return null;
-        }
-
-        try {
-            return (IMockitoConfiguration) configClass.newInstance();
-        } catch (ClassCastException e) {
-            throw new MockitoConfigurationException("MockitoConfiguration class must implement " + IMockitoConfiguration.class.getName() + " interface.", e);
-        } catch (Exception e) {
-            throw new MockitoConfigurationException("Unable to instantiate " + MOCKITO_CONFIGURATION_CLASS_NAME +" class. Does it have a safe, no-arg constructor?", e);
-        }
+        ServiceLoader<IMockitoConfiguration> serviceLoader = ServiceLoader.load(IMockitoConfiguration.class);
+        Optional<IMockitoConfiguration> configClass = serviceLoader.findFirst();
+        return configClass.orElse(null);
     }
 }

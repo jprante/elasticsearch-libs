@@ -1,5 +1,5 @@
 
-grant codeBase "${codebase.randomizedtesting-junit4-ant-tests}" {
+grant codeBase "file://${codebase.randomizedtesting-junit4-ant-tests}" {
   permission java.util.PropertyPermission "*", "read,write"; // AntBuildFileTestBase -> ant Project.setSystemProperties
   permission java.io.FilePermission "${junit4.childvm.cwd}${/}*", "read,write,delete";
   permission java.lang.RuntimePermission "setIO";
@@ -7,7 +7,7 @@ grant codeBase "${codebase.randomizedtesting-junit4-ant-tests}" {
   permission java.io.FilePermission "*", "read";
 };
 
-grant codeBase "${codebase.randomizedtesting-junit4-ant}" {
+grant codeBase "file://${codebase.randomizedtesting-junit4-ant}" {
   permission java.util.PropertyPermission "*", "read,write";
    // we use ProcessHandle in BootstrapEvent
    permission java.lang.RuntimePermission "manageProcess";
@@ -22,7 +22,7 @@ grant codeBase "${codebase.randomizedtesting-junit4-ant}" {
   permission java.io.FilePermission "*", "read";
 };
 
-grant codeBase "${codebase.randomizedtesting}" {
+grant codeBase "file://${codebase.randomizedtesting}" {
   // tests.prefix
   permission java.util.PropertyPermission "*", "read";
   // optionally needed for access to private test methods (e.g. beforeClass)
@@ -38,7 +38,7 @@ grant codeBase "${codebase.randomizedtesting}" {
   permission java.io.FilePermission "*", "read";
 };
 
-grant codeBase "${codebase.junit}" {
+grant codeBase "file://${codebase.junit}" {
   // needed for TestClass creation
   permission java.lang.RuntimePermission "accessDeclaredMembers";
   permission java.lang.RuntimePermission "setIO";
@@ -46,12 +46,12 @@ grant codeBase "${codebase.junit}" {
   permission java.io.FilePermission "*", "read";
 };
 
-grant codebase "${codebase.ant}" {
+grant codebase "file://${codebase.ant}" {
   permission java.util.PropertyPermission "*", "read,write";
   permission java.io.FilePermission "*", "read";
 };
 
-grant codebase "${codebase.ant-launcher}" {
+grant codebase "file://${codebase.ant-launcher}" {
   permission java.util.PropertyPermission "*", "read,write";
   permission java.io.FilePermission "*", "read";
 };
