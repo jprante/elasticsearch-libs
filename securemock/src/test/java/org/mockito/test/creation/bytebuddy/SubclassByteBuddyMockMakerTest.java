@@ -56,7 +56,6 @@ public class SubclassByteBuddyMockMakerTest extends AbstractByteBuddyMockMakerTe
     @Test
     public void mock_type_with_annotations() throws Exception {
         MockSettingsImpl<ClassWithAnnotation> mockSettings = new MockSettingsImpl<ClassWithAnnotation>();
-        mockSettings.setCallerClass(getClass());
         mockSettings.setTypeToMock(ClassWithAnnotation.class);
 
         ClassWithAnnotation proxy = mockMaker.createMock(mockSettings, dummyHandler());
@@ -71,7 +70,6 @@ public class SubclassByteBuddyMockMakerTest extends AbstractByteBuddyMockMakerTe
     @Test
     public void mock_type_without_annotations() throws Exception {
         MockSettingsImpl<ClassWithAnnotation> mockSettings = new MockSettingsImpl<ClassWithAnnotation>();
-        mockSettings.setCallerClass(getClass());
         mockSettings.setTypeToMock(ClassWithAnnotation.class);
         mockSettings.withoutAnnotations();
 

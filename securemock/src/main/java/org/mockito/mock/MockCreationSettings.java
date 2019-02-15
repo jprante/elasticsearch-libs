@@ -20,8 +20,6 @@ import java.util.Set;
 @NotExtensible
 public interface MockCreationSettings<T> {
 
-    Class<?> getCallerClass();
-
     /**
      * Mocked type. An interface or class the mock should implement / extend.
      */

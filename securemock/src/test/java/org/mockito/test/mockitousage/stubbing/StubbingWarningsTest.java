@@ -79,7 +79,7 @@ public class StubbingWarningsTest {
         //then
         assertEquals(filterLineNo(
             "[MockitoHint] " + TEST_NAME + " (see javadoc for MockitoHint):\n" +
-            "[MockitoHint] 1. Unused -> at org.mockitousage.stubbing.StubbingWarningsTest.stubbing_argument_mismatch(StubbingWarningsTest.java:0)\n"),
+            "[MockitoHint] 1. Unused -> at org.mockito.test.mockitousage.stubbing.StubbingWarningsTest.stubbing_argument_mismatch(StubbingWarningsTest.java:0)\n"),
                 filterLineNo(logger.getLoggedInfo()));
     }
 
@@ -92,7 +92,7 @@ public class StubbingWarningsTest {
         //then
         assertEquals(filterLineNo(
             "[MockitoHint] " + TEST_NAME + " (see javadoc for MockitoHint):\n" +
-            "[MockitoHint] 1. Unused -> at org.mockitousage.stubbing.StubbingWarningsTest.unused_stubbing(StubbingWarningsTest.java:0)\n"),
+            "[MockitoHint] 1. Unused -> at org.mockito.test.mockitousage.stubbing.StubbingWarningsTest.unused_stubbing(StubbingWarningsTest.java:0)\n"),
                 filterLineNo(logger.getLoggedInfo()));
     }
 

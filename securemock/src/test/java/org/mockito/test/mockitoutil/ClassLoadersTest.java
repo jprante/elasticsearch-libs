@@ -18,8 +18,8 @@ import static org.mockito.test.mockitoutil.ClassLoaders.jdkClassLoader;
 
 public class ClassLoadersTest {
 
-    public static final String CLASS_NAME_DEPENDING_ON_INTERFACE = "org.mockitoutil.test.ClassLoadersTest$ClassUsingInterface1";
-    public static final String INTERFACE_NAME = "org.mockitoutil.test.ClassLoadersTest$Interface1";
+    public static final String CLASS_NAME_DEPENDING_ON_INTERFACE = "org.mockito.test.mockitoutil.ClassLoadersTest$ClassUsingInterface1";
+    public static final String INTERFACE_NAME = "org.mockito.test.mockitoutil.ClassLoadersTest$Interface1";
 
     @Test(expected = ClassNotFoundException.class)
     public void isolated_class_loader_cannot_load_classes_when_no_given_prefix() throws Exception {
@@ -117,7 +117,7 @@ public class ClassLoadersTest {
             fail();
         } catch (ClassNotFoundException e) {
             // then
-            assertThat(e).hasMessageContaining("org.mockitoutil")
+            assertThat(e).hasMessageContaining("org.mockito.test.mockitoutil")
                          .hasMessageContaining(AClass.class.getName());
         }
     }

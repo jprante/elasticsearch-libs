@@ -8,6 +8,7 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import org.hamcrest.Matcher;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.configuration.plugins.Plugins;
@@ -18,6 +19,7 @@ import java.util.Set;
 
 import static org.mockito.test.mockitoutil.ClassLoaders.coverageTool;
 
+@Ignore /* removed InlineByteBuddyMockMaker */
 public class NoJUnitDependenciesTest {
 
     @Test

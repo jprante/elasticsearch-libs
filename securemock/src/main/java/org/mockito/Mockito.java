@@ -18,8 +18,6 @@ import org.mockito.verification.VerificationWithTimeout;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
-
 /**
  * Wraps Mockito API with calls to AccessController.
  * This is useful if you want to mock in a SecurityManager environment,
@@ -51,9 +49,8 @@ public class Mockito extends ArgumentMatchers {
     public static final Answer<Object> RETURNS_SELF = Answers.RETURNS_SELF;
 
     public static <T> T mock(final Class<T> classToMock) {
-        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         T mockedClass = AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                mock(classToMock, withSettings(callerClass)));
+                mock(classToMock, withSettings()));
         if (mockedClass == null) {
             throw new IllegalStateException("unable to mock " + classToMock);
         }
@@ -61,9 +58,8 @@ public class Mockito extends ArgumentMatchers {
     }
 
     public static <T> T mock(final Class<T> classToMock, final String name) {
-        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                mock(classToMock, withSettings(callerClass)
+                mock(classToMock, withSettings()
                         .name(name)
                         .defaultAnswer(RETURNS_DEFAULTS)));
     }
@@ -74,9 +70,8 @@ public class Mockito extends ArgumentMatchers {
     }
 
     public static <T> T mock(final Class<T> classToMock, final Answer defaultAnswer) {
-        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                mock(classToMock, withSettings(callerClass).defaultAnswer(defaultAnswer)));
+                mock(classToMock, withSettings().defaultAnswer(defaultAnswer)));
     }
     
     public static <T> T mock(final Class<T> classToMock, final MockSettings mockSettings) {
@@ -85,17 +80,15 @@ public class Mockito extends ArgumentMatchers {
     }
     
     public static <T> T spy(final T object) {
-        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                MOCKITO_CORE.mock((Class<T>) object.getClass(), withSettings(callerClass)
+                MOCKITO_CORE.mock((Class<T>) object.getClass(), withSettings()
                         .spiedInstance(object)
                         .defaultAnswer(CALLS_REAL_METHODS)));
     }
 
     public static <T> T spy(Class<T> classToSpy) {
-        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<T>) () ->
-                MOCKITO_CORE.mock(classToSpy, withSettings(callerClass)
+                MOCKITO_CORE.mock(classToSpy, withSettings()
                 .useConstructor()
                 .defaultAnswer(CALLS_REAL_METHODS)));
     }
@@ -246,14 +239,8 @@ public class Mockito extends ArgumentMatchers {
     }
 
     public static MockSettings withSettings() {
-        Class<?> callerClass = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass();
         return AccessController.doPrivileged((PrivilegedAction<MockSettings>) () ->
-                new MockSettingsImpl().callerClass(callerClass).defaultAnswer(RETURNS_DEFAULTS));
-    }
-
-    public static MockSettings withSettings(Class<?> callerClass) {
-        return AccessController.doPrivileged((PrivilegedAction<MockSettings>) () ->
-                new MockSettingsImpl().callerClass(callerClass).defaultAnswer(RETURNS_DEFAULTS));
+                new MockSettingsImpl().defaultAnswer(RETURNS_DEFAULTS));
     }
 
     public static VerificationMode description(String description) {

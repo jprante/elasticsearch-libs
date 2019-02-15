@@ -40,11 +40,6 @@ public class MockSettingsImpl<T> extends CreationSettings<T> implements MockSett
     private Object outerClassInstance;
     private Object[] constructorArgs;
 
-    public MockSettings callerClass(Class<?> callerClass) {
-        super.setCallerClass(callerClass);
-        return this;
-    }
-
     @Override
     public MockSettings serializable() {
         return serializable(SerializableMode.BASIC);
@@ -246,7 +241,6 @@ public class MockSettingsImpl<T> extends CreationSettings<T> implements MockSett
         //TODO SF - I don't think we really need CreationSettings type
         //TODO do we really need to copy the entire settings every time we create mock object? it does not seem necessary.
         CreationSettings<T> settings = new CreationSettings<T>(source);
-        settings.setCallerClass(source.getCallerClass());
         settings.setMockName(new MockNameImpl(source.getName(), typeToMock));
         settings.setTypeToMock(typeToMock);
         settings.setExtraInterfaces(prepareExtraInterfaces(source));

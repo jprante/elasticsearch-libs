@@ -68,7 +68,6 @@ public class SubclassByteBuddyMockMaker implements ClassCreatingMockMaker {
     public <T> Class<? extends T> createMockType(MockCreationSettings<T> settings) {
         try {
             return cachingMockBytecodeGenerator.mockClass(MockFeatures.withMockFeatures(
-                    settings.getCallerClass(),
                     settings.getTypeToMock(),
                     settings.getExtraInterfaces(),
                     settings.getSerializableMode(),

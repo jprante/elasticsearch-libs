@@ -157,7 +157,6 @@ public abstract class AbstractByteBuddyMockMakerTest<MM extends MockMaker> {
 
     private static <T> MockCreationSettings<T> settingsFor(Class<T> type, Class<?>... extraInterfaces) {
         MockSettingsImpl<T> mockSettings = new MockSettingsImpl<T>();
-        mockSettings.setCallerClass(AbstractByteBuddyMockMakerTest.class);
         mockSettings.setTypeToMock(type);
         if(extraInterfaces.length > 0) mockSettings.extraInterfaces(extraInterfaces);
         return mockSettings;
@@ -165,7 +164,6 @@ public abstract class AbstractByteBuddyMockMakerTest<MM extends MockMaker> {
 
     private static <T> MockCreationSettings<T> serializableSettingsFor(Class<T> type, SerializableMode serializableMode) {
         MockSettingsImpl<T> mockSettings = new MockSettingsImpl<T>();
-        mockSettings.setCallerClass(AbstractByteBuddyMockMakerTest.class);
         mockSettings.serializable(serializableMode);
         mockSettings.setTypeToMock(type);
         return mockSettings;
@@ -173,14 +171,12 @@ public abstract class AbstractByteBuddyMockMakerTest<MM extends MockMaker> {
 
     private static <T> MockCreationSettings<T> settingsWithConstructorFor(Class<T> type) {
         MockSettingsImpl<T> mockSettings = new MockSettingsImpl<T>();
-        mockSettings.setCallerClass(AbstractByteBuddyMockMakerTest.class);
         mockSettings.setTypeToMock(type);
         return mockSettings;
     }
 
     private static <T> MockCreationSettings<T> settingsWithSuperCall(Class<T> type) {
         MockSettingsImpl<T> mockSettings = new MockSettingsImpl<T>();
-        mockSettings.setCallerClass(AbstractByteBuddyMockMakerTest.class);
         mockSettings.setTypeToMock(type);
         mockSettings.defaultAnswer(new CallsRealMethods());
         return mockSettings;

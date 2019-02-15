@@ -52,9 +52,6 @@ task unpackSource(type: Copy) {
         exclude '**/StdInstantiatorStrategy.java' // unsafe in objenesis, replace by our Java 11 version
         exclude '**/VirtualMachine.java' // bytebuddy agent (unix socket)
         exclude '**/ByteBuddyAgent.java' // bytebuddy agent (unix socket)
-        //exclude '**/Mockito.java' // mockito: replace by our access-protected version
-        //exclude '**/InlineByteBuddyMockMaker.java' // mockito: remove bytebuddy agent usage
-        //exclude '**/StackTraceFilter.java' // mockito: race condition in Plugins instantiation, remove stacktrace filter plugin
     }
     doLast {
         // we want our asm on the module graph, so we have to undo bytebuddy relocation
@@ -167,6 +164,7 @@ afterEvaluate {
                     '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.progress=junit',
                     '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.reporting=junit',
                     '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.runners=junit',
+                    '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.runners.util=junit',
                     '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.session=junit',
                     '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.stubbing=junit',
                     '--add-exports', 'org.xbib.elasticsearch.securemock/org.mockito.test.stubbing.answers=junit',
@@ -183,6 +181,10 @@ afterEvaluate {
             exclude '**/*$*'
             exclude '**/Abstract*'
             include '**/*Test.class'
+        }
+        testLogging {
+            showStandardStreams = true
+            exceptionFormat = 'full'
         }
     }
     javadoc {

@@ -10,17 +10,20 @@ import static org.mockito.test.mockitoutil.ClassLoaders.excludingClassLoader;
 import java.lang.reflect.Method;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.exceptions.verification.ArgumentsAreDifferent;
+import org.mockito.exceptions.verification.junit.ArgumentsAreDifferent;
 import org.mockito.internal.junit.ExceptionFactory;
 
 public class ExceptionFactoryTest {
 
-    private static ClassLoader classLoaderWithoutJUnit = excludingClassLoader().withCodeSourceUrlOf(ExceptionFactory.class).without("org.junit", "junit").build();
+    private static ClassLoader classLoaderWithoutJUnit = excludingClassLoader()
+            .withCodeSourceUrlOf(ExceptionFactory.class)
+            .without("org.junit", "junit")
+            .build();
 
     /** loaded by the current current class loader */
     private static Class<?> junitArgumentsAreDifferent;
 
-    /** loaded by the custom classloader {@value #classLoaderWithoutJUnit}, which excludes junit-classes */
+    /** loaded by the custom classloader classLoaderWithoutJUnit, which excludes junit-classes */
     private static Class<?> nonJunitArgumentsAreDifferent;
 
     @BeforeClass

@@ -85,7 +85,7 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
      *
      *         <p>However the <code>ObjectOutputStream</code> will still detect the custom
      *         <code>writeReplace</code> and execute it.
-     *         <em>(For that matter disabling replacement via {@link ObjectOutputStream#enableReplaceObject(boolean)}
+     *         <em>(For that matter disabling replacement via ObjectOutputStream's enableReplaceObject(boolean)
      *         doesn't disable the <code>writeReplace</code> call, but just just toggle replacement in the
      *         written stream, <strong><code>writeReplace</code> is always called by
      *         <code>ObjectOutputStream</code></strong>.)</em></p>
@@ -158,7 +158,6 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
 
         private static final long serialVersionUID = -7600267929109286514L;
         private final byte[] serializedMock;
-        private final Class<?> callerClass;
         private final Class<?> typeToMock;
         private final Set<Class<?>> extraInterfaces;
 
@@ -182,7 +181,6 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
 
             MockCreationSettings<?> mockSettings = MockUtil.getMockSettings(mockitoMock);
             this.serializedMock = out.toByteArray();
-            this.callerClass = mockSettings.getCallerClass();
             this.typeToMock = mockSettings.getTypeToMock();
             this.extraInterfaces = mockSettings.getExtraInterfaces();
         }
@@ -198,7 +196,7 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
         private Object readResolve() throws ObjectStreamException {
             try {
                 ByteArrayInputStream bis = new ByteArrayInputStream(serializedMock);
-                ObjectInputStream objectInputStream = new MockitoMockObjectInputStream(bis, callerClass,
+                ObjectInputStream objectInputStream = new MockitoMockObjectInputStream(bis,
                         typeToMock, extraInterfaces);
 
                 Object deserializedMock = objectInputStream.readObject();
@@ -241,14 +239,12 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
      * </p>
      */
     public static class MockitoMockObjectInputStream extends ObjectInputStream {
-        private final Class<?> callerClass;
         private final Class<?> typeToMock;
         private final Set<Class<?>> extraInterfaces;
 
-        public MockitoMockObjectInputStream(InputStream in, Class<?> callerClass,
+        public MockitoMockObjectInputStream(InputStream in,
                                             Class<?> typeToMock, Set<Class<?>> extraInterfaces) throws IOException {
             super(in);
-            this.callerClass = callerClass;
             this.typeToMock = typeToMock;
             this.extraInterfaces = extraInterfaces;
             enableResolveObject(true); // ensure resolving is enabled
@@ -277,7 +273,6 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
                 @SuppressWarnings("unchecked")
                 Class<?> proxyClass = ((ClassCreatingMockMaker) Plugins.getMockMaker()).createMockType(
                         new CreationSettings()
-                                .setCallerClass(callerClass)
                                 .setTypeToMock(typeToMock)
                                 .setExtraInterfaces(extraInterfaces)
                                 .setSerializableMode(SerializableMode.ACROSS_CLASSLOADERS));

@@ -5,8 +5,6 @@
 package org.mockito.test.configuration;
 
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.mockito.test.mockitousage.IMethods;
 import org.mockito.test.mockitoutil.TestBase;
 
@@ -17,11 +15,7 @@ public class ConfigurationLoaderTest extends TestBase {
 
     @Test
     public void shouldReadConfigurationClass() {
-        ConfigurationAccess.getConfig().overrideDefaultAnswer(new Answer<Object>() {
-            public Object answer(InvocationOnMock invocation) {
-                return "foo";
-            }});
-
+        ConfigurationAccess.getConfig().overrideDefaultAnswer(invocation -> "foo");
         IMethods mock = mock(IMethods.class);
         assertEquals("foo", mock.simpleMethod());
     }

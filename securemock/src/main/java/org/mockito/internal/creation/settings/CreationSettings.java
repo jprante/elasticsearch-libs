@@ -22,7 +22,6 @@ import java.util.Set;
 public class CreationSettings<T> implements MockCreationSettings<T>, Serializable {
     private static final long serialVersionUID = -6789800638070123629L;
 
-    protected Class<?> callerClass;
     protected Class<T> typeToMock;
     protected Set<Class<?>> extraInterfaces = new LinkedHashSet<Class<?>>();
     protected String name;
@@ -56,16 +55,6 @@ public class CreationSettings<T> implements MockCreationSettings<T>, Serializabl
         this.useConstructor = copy.isUsingConstructor();
         this.outerClassInstance = copy.getOuterClassInstance();
         this.constructorArgs = copy.getConstructorArgs();
-    }
-
-    @Override
-    public Class<?> getCallerClass() {
-        return callerClass;
-    }
-
-    public CreationSettings<T> setCallerClass(Class<?> callerClass) {
-        this.callerClass = callerClass;
-        return this;
     }
 
     @Override

@@ -127,11 +127,11 @@ public class ThreadsRunAllTestsHalfManualTest extends TestBase {
                 );
 
                 if (!result.wasSuccessful()) {
-                    System.err.println("Thread[" + Thread.currentThread().getId() + "]: error!");
+                    //System.err.println("Thread[" + Thread.currentThread().getId() + "]: error!");
                     List<Failure> failures = result.getFailures();
-                    System.err.println(failures.size());
+                    //System.err.println(failures.size());
                     for (Failure failure : failures) {
-                        System.err.println(failure.getTrace());
+                        //System.err.println(failure.getTrace());
                         failed.add(failure.getDescription().getTestClass());
                     }
                 }

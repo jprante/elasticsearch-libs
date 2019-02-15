@@ -40,7 +40,6 @@ public class TypeCachingMockBytecodeGeneratorTest {
         TypeCachingBytecodeGenerator cachingMockBytecodeGenerator = new TypeCachingBytecodeGenerator(new SubclassBytecodeGenerator(), true);
 
         Class<?> the_mock_type = cachingMockBytecodeGenerator.mockClass(withMockFeatures(
-                getClass(),
                 classloader_with_life_shorter_than_cache.loadClass("foo.Bar"),
                 Collections.<Class<?>>emptySet(),
                 SerializableMode.NONE,
@@ -70,7 +69,6 @@ public class TypeCachingMockBytecodeGeneratorTest {
 
         TypeCachingBytecodeGenerator cachingMockBytecodeGenerator = new TypeCachingBytecodeGenerator(new SubclassBytecodeGenerator(), true);
         Class<?> the_mock_type = cachingMockBytecodeGenerator.mockClass(withMockFeatures(
-                getClass(),
                 classloader_with_life_shorter_than_cache.loadClass("foo.Bar"),
                 Collections.<Class<?>>emptySet(),
                 SerializableMode.NONE,
@@ -78,7 +76,6 @@ public class TypeCachingMockBytecodeGeneratorTest {
         ));
 
         Class<?> other_mock_type = cachingMockBytecodeGenerator.mockClass(withMockFeatures(
-                getClass(),
                 classloader_with_life_shorter_than_cache.loadClass("foo.Bar"),
                 Collections.<Class<?>>emptySet(),
                 SerializableMode.NONE,
@@ -111,7 +108,6 @@ public class TypeCachingMockBytecodeGeneratorTest {
 
         TypeCachingBytecodeGenerator cachingMockBytecodeGenerator = new TypeCachingBytecodeGenerator(new SubclassBytecodeGenerator(), true);
         Class<?> the_mock_type = cachingMockBytecodeGenerator.mockClass(withMockFeatures(
-                getClass(),
                 classloader_with_life_shorter_than_cache.loadClass("foo.Bar"),
                 Collections.<Class<?>>emptySet(),
                 SerializableMode.NONE,
@@ -119,7 +115,6 @@ public class TypeCachingMockBytecodeGeneratorTest {
         ));
 
         Class<?> other_mock_type = cachingMockBytecodeGenerator.mockClass(withMockFeatures(
-                getClass(),
                 classloader_with_life_shorter_than_cache.loadClass("foo.Bar"),
                 Collections.<Class<?>>emptySet(),
                 SerializableMode.BASIC,
