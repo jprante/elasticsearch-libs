@@ -57,7 +57,7 @@ public class TestFinnishLightStemFilter extends BaseTokenStreamTestCase {
   
   /** Test against a vocabulary from the reference impl */
   public void testVocabulary() throws IOException {
-    assertVocabulary(analyzer, getDataInputStream("filighttestdata.zip"), "filight.txt");
+    assertVocabulary(analyzer, getDataInputStream(getClass(), "filighttestdata.zip"), "filight.txt");
   }
   
   public void testKeyword() throws IOException {

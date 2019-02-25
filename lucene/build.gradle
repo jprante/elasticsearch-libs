@@ -182,18 +182,8 @@ afterEvaluate {
     }
 }
 
-task javadocJar(type: Jar) {
-    from javadoc
-    classifier 'javadoc'
-}
-
 tasks.withType(Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier 'sources'
 }
 
 task testJar(type: Jar) {
@@ -205,5 +195,9 @@ task testJar(type: Jar) {
 artifacts {
     mains jar
     tests testJar
-    archives sourcesJar, javadocJar, testJar
+    archives testJar
+}
+
+signing {
+    sign testJar
 }

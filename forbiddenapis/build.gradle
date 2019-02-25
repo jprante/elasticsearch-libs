@@ -3,17 +3,3 @@ dependencies {
     compile "org.ow2.asm:asm-commons:${project.property('asm.version')}"
     testCompile "junit:junit:${project.property('junit.version')}"
 }
-
-task javadocJar(type: Jar) {
-    from javadoc
-    classifier 'javadoc'
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier 'sources'
-}
-
-artifacts {
-    archives sourcesJar, javadocJar
-}

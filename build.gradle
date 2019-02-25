@@ -1,5 +1,4 @@
 buildscript {
-
     repositories {
         jcenter()
         maven {
@@ -11,12 +10,40 @@ buildscript {
     }
 }
 
-apply plugin: "java"
+plugins {
+    id "io.codearte.nexus-staging" version "0.11.0"
+}
 
 apply from: rootProject.file('gradle/banner.gradle')
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'signing'
+
+    test {
+        enabled = false
+    }
+    
+    task javadocJar(type: Jar) {
+        from javadoc
+        classifier 'javadoc'
+    }
+
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allSource
+        classifier 'sources'
+    }
+
+    artifacts {
+        archives jar, sourcesJar, javadocJar
+    }
+
+    signing {
+        sign jar
+        sign sourcesJar
+        sign javadocJar
+    }
+
     apply from: rootProject.file('gradle/publish.gradle')
     apply from: rootProject.file('gradle/sourcequality.gradle')
 }

@@ -187,7 +187,7 @@ public class TestFrenchLightStemFilter extends BaseTokenStreamTestCase {
   
   /** Test against a vocabulary from the reference impl */
   public void testVocabulary() throws IOException {
-    assertVocabulary(analyzer, getDataInputStream("frlighttestdata.zip"), "frlight.txt");
+    assertVocabulary(analyzer, getDataInputStream(getClass(), "frlighttestdata.zip"), "frlight.txt");
   }
   
   public void testKeyword() throws IOException {

@@ -74,7 +74,7 @@ public class TestSnowballVocab extends LuceneTestCase {
       }  
     };
     
-    assertVocabulary(a, getDataInputStream("TestSnowballVocabData.zip"),
+    assertVocabulary(a, getDataInputStream(getClass(), "TestSnowballVocabData.zip"),
         dataDirectory + "/voc.txt", dataDirectory + "/output.txt");
     a.close();
   }

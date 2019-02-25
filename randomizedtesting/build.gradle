@@ -53,16 +53,6 @@ afterEvaluate {
     }
 }
 
-task javadocJar(type: Jar) {
-    from javadoc
-    classifier 'javadoc'
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier 'sources'
-}
-
 task testJar(type: Jar) {
     group = 'build'
     from sourceSets.test.output
@@ -72,5 +62,9 @@ task testJar(type: Jar) {
 artifacts {
     mains jar
     tests testJar
-    archives sourcesJar, javadocJar, testJar
+    archives testJar
+}
+
+signing {
+    sign testJar
 }

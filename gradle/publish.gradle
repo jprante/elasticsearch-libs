@@ -1,5 +1,4 @@
 apply plugin: 'maven'
-apply plugin: 'signing'
 
 configurations {
     wagon
@@ -7,12 +6,6 @@ configurations {
 
 dependencies {
     wagon "org.apache.maven.wagon:wagon-ssh:${property('wagon.version')}"
-}
-
-if (project.hasProperty('signing.keyId')) {
-    signing {
-        sign configurations.archives
-    }
 }
 
 task xbibUpload(type: Upload) {
@@ -53,7 +46,7 @@ task sonatypeUpload(type: Upload) {
                     description 'Libraries for Elasticsearch'
                     packaging 'jar'
                     inceptionYear '2018'
-                    url 'https://github.com/jprante/elasticsearch-xbib'
+                    url 'https://github.com/jprante/elasticsearch-libs'
                     organization {
                         name 'xbib'
                         url 'http://xbib.org'
@@ -83,6 +76,6 @@ task sonatypeUpload(type: Upload) {
     }
 }
 
-//nexusStaging {
-//    packageGroup = "org.xbib"
-//}
+nexusStaging {
+    packageGroup = "org.xbib"
+}

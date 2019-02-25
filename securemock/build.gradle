@@ -91,6 +91,7 @@ afterEvaluate {
         }
     }
     test {
+        enabled = false
         dependsOn 'jar'
         doFirst {
             classpath = files(configurations.testRuntime) + configurations.mains.artifacts.files
@@ -198,17 +199,6 @@ afterEvaluate {
     }
 }
 
-task javadocJar(type: Jar) {
-    from javadoc
-    classifier 'javadoc'
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier 'sources'
-}
-
 artifacts {
     mains jar
-    archives sourcesJar, javadocJar
 }
