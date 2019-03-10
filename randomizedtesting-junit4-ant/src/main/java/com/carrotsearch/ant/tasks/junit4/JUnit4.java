@@ -1418,7 +1418,7 @@ public class JUnit4 extends Task {
             String key = resource.getName().endsWith("-tests.jar") ?
                     resource.getName().replaceAll("-\\d\\.\\d.*\\-tests.jar", "-tests") :
                     resource.getName().replaceAll("-\\d\\.\\d.*\\.jar", "");
-            String value = fileResource.getFile().getAbsolutePath();
+            String value = fileResource.getFile().toURI().toString();
             Variable codebase = new Variable();
             codebase.setKey("codebase." + key);
             codebase.setValue(value);

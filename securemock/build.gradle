@@ -20,9 +20,12 @@ configurations {
 }
 
 dependencies {
+    // required by mockito
     source "org.objenesis:objenesis:${project.property('objenesis.version')}:sources"
+    // required by mockito
     source "net.bytebuddy:byte-buddy:${project.property('bytebuddy.version')}:sources"
     source "net.bytebuddy:byte-buddy-agent:${project.property('bytebuddy.version')}:sources"
+    // todo: our asm version
     compile "org.ow2.asm:asm:${project.property('asm.version')}"
     compile "org.ow2.asm:asm-commons:${project.property('asm.version')}"
     compile "org.ow2.asm:asm-tree:${project.property('asm.version')}"
