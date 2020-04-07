@@ -2,7 +2,7 @@ buildscript {
     repositories {
         jcenter()
         maven {
-            url 'http://xbib.org/repository'
+            url 'https://xbib.org/repository'
         }
     }
     dependencies {
@@ -15,6 +15,11 @@ plugins {
 }
 
 apply from: rootProject.file('gradle/banner.gradle')
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
 
 subprojects {
     apply plugin: 'java'

@@ -1927,11 +1927,11 @@ public class JUnit4 extends Task {
   }
 
     private org.apache.tools.ant.types.Path addSlaveModulepath() {
-        org.apache.tools.ant.types.Path path = new org.apache.tools.ant.types.Path(getProject());
-        for (URI uri : parseModulePath()) {
-            path.createPath().setLocation(Paths.get(uri).toFile());
-        }
-        return path;
+      org.apache.tools.ant.types.Path path = new org.apache.tools.ant.types.Path(getProject());
+      for (URI uri : parseModulePath()) {
+        path.createPath().setPath(uri.toString());
+      }
+      return path;
     }
 
     private static Set<URI> parseModulePath() {

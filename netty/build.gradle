@@ -60,6 +60,8 @@ task unpackSource(type: Copy) {
         exclude '**/OpenJdkSelfSignedCertGenerator.java' // drop, because of package sun.security.x509
         exclude '**/BouncyCastleSelfSignedCertGenerator.java' // drop, because of package sun.security.x509
         exclude '**/LoggingHandler.java' // wrong export of InternalLogger!
+        exclude '**/io/netty/util/internal/Hidden.java' // drop reactor.blockhound integration
+        exclude '**/io/netty/util/internal/svm/*' // drop Oracle SVM integration
     }
 }
 
